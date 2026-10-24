@@ -22,7 +22,7 @@ tickers:
     PART, PEGE, PICO, PURA, RICH, SAME, SONA, SOUL, STAR, TOTO, TRIS, VICI, WOWS
   ]
   context_window: 5        # jarak maksimum (dalam kata) antara ticker dan kata konteks
-  context_words: [tp, target, entry, sl, buy, sell, beli, jual, avg, cl, cutloss, stoploss]
+  context_words: [tp, target, entry, sl, buy, sell, beli, jual, avg, cl, cutloss, stoploss, tbk, emiten]
   allow_lowercase_with_prefix: true   # "$bbca" / "#bbca" ikut dihitung
 
 dedup:

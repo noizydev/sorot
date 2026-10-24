@@ -1,0 +1,434 @@
+<title>Jejak Promosi Saham Telegram</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: kolom bacaan tunggal ~70ch, figur melebar sampai 1080px; studi kasus sebagai blok bernomor (urutan = indeks kasus). */
+:root {
+  --paper: #f5f6f2;
+  --surface: #ffffff;
+  --ink: #18212b;
+  --muted: #5b6672;
+  --rule: #d9ddd5;
+  --accent: #0e6e66;       /* teal tinta: sorotan & data utama */
+  --accent-soft: #d6ebe7;
+  --warn: #b5650d;         /* amber: sinyal 2 kanal */
+  --hot: #b4322a;          /* merah: sinyal >=3 kanal */
+  --quiet: #9aa3ad;        /* abu: 1 kanal / kontrol */
+  --c1: #0e6e66; --c2: #b5650d; --c3: #4a5fa8; --c4: #8a4f9e; --c5: #9aa3ad;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12171c; --surface: #1a2027; --ink: #e6e9ec; --muted: #9aa5b1; --rule: #2c343d;
+    --accent: #4fc1b5; --accent-soft: #173a37; --warn: #e3a04f; --hot: #ec6a5f; --quiet: #6c7783;
+    --c1: #4fc1b5; --c2: #e3a04f; --c3: #8ea2ea; --c4: #c690d8; --c5: #6c7783;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12171c; --surface: #1a2027; --ink: #e6e9ec; --muted: #9aa5b1; --rule: #2c343d;
+  --accent: #4fc1b5; --accent-soft: #173a37; --warn: #e3a04f; --hot: #ec6a5f; --quiet: #6c7783;
+  --c1: #4fc1b5; --c2: #e3a04f; --c3: #8ea2ea; --c4: #c690d8; --c5: #6c7783;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font-body);
+  font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 56px; }
+.prose { max-width: 70ch; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+h3 { font-size: 1.3rem; }
+p { margin: 0; }
+.stack { display: grid; gap: 16px; }
+.eyebrow { font-family: var(--font-data); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 62ch; }
+.meta { font-family: var(--font-data); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+a { color: var(--accent); }
+code, .mono { font-family: var(--font-data); font-size: .9em; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.tile { background: var(--surface); padding: 16px 18px; display: grid; gap: 4px; }
+.tile b { font-family: var(--font-data); font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 13px; color: var(--muted); }
+
+/* findings */
+.findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+.finding { display: grid; gap: 8px; align-content: start; padding-top: 14px; border-top: 2px solid var(--ink); }
+.finding .big { font-family: var(--font-data); font-size: 2rem; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+.finding p { font-size: 15px; }
+
+/* figure */
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+figcaption { font-size: 13.5px; color: var(--muted); max-width: 75ch; }
+.chart { position: relative; width: 100%; min-width: 0; }
+.chart.h300 { height: 300px; } .chart.h340 { height: 340px; } .chart.h420 { height: 420px; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
+.two > * { min-width: 0; }
+
+/* stacked bars */
+.sbar { display: grid; gap: 10px; }
+.sbar-row { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; font-size: 13.5px; }
+.sbar-track { display: flex; height: 26px; border-radius: 3px; overflow: hidden; background: var(--rule); }
+.sbar-seg { height: 100%; display: flex; align-items: center; justify-content: center; color: var(--surface); font-family: var(--font-data); font-size: 11.5px; white-space: nowrap; overflow: hidden; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+/* tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-data); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; white-space: nowrap; }
+td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+
+/* cases */
+.case { display: grid; gap: 22px; padding-top: 28px; border-top: 1px solid var(--rule); }
+.case-head { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: baseline; }
+.case-no { font-family: var(--font-data); font-size: 13px; color: var(--muted); }
+.ticker { font-family: var(--font-data); font-weight: 500; font-size: 1.9rem; letter-spacing: .02em; }
+.case-name { color: var(--muted); font-size: 14px; grid-column: 2; }
+.pill { display: inline-block; font-family: var(--font-data); font-size: 11.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; letter-spacing: .03em; }
+.pill.hot { color: var(--hot); } .pill.warn { color: var(--warn); } .pill.acc { color: var(--accent); } .pill.quiet { color: var(--muted); }
+.case-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; }
+@media (max-width: 820px) { .case-grid { grid-template-columns: 1fr; } }
+.facts { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; font-size: 14px; align-content: start; }
+.facts dt { color: var(--muted); } .facts dd { margin: 0; text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.timeline { display: grid; gap: 0; border-left: 2px solid var(--rule); margin-left: 6px; }
+.tl-item { display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 8px 0 8px 14px; position: relative; font-size: 14px; }
+.tl-item::before { content: ""; position: absolute; left: -6px; top: 15px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.tl-time { font-family: var(--font-data); font-size: 12.5px; color: var(--muted); padding-top: 1px; }
+.tl-ch { font-family: var(--font-data); font-size: 12.5px; color: var(--accent); }
+.tl-text { overflow-wrap: anywhere; }
+.reading { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; max-width: 75ch; }
+
+/* network */
+.net { width: 100%; height: auto; display: block; background: var(--surface); border: 1px solid var(--rule); }
+.net text { font-family: var(--font-data); font-size: 11px; fill: var(--ink); }
+
+.callout { background: var(--accent-soft); padding: 18px 20px; border-radius: 4px; max-width: 80ch; display: grid; gap: 8px; }
+ol.plain, ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+pre { margin: 0; background: var(--surface); border: 1px solid var(--rule); padding: 14px 16px; overflow-x: auto; font-family: var(--font-data); font-size: 13px; line-height: 1.55; }
+.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.step { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.step b { font-family: var(--font-data); font-size: 12px; color: var(--accent); font-weight: 500; }
+.step span { font-size: 13.5px; }
+.foot { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<main class="wrap">
+  <header class="stack">
+    <div class="eyebrow">SOROT · Laporan riset</div>
+    <h1>Jejak Promosi Saham di Kanal Telegram Indonesia</h1>
+    <p class="lede">Apa yang terlihat ketika 41 ribu pesan dari 34 kanal saham publik dibaca bersamaan dengan data volume bursa? Laporan ini menguji hasil pipeline SOROT pada lima saham dan mencari pola promosi yang terkoordinasi.</p>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <section class="stack" aria-labelledby="h-temuan">
+    <h2 id="h-temuan">Ringkasan temuan</h2>
+    <div class="findings" id="findings"></div>
+  </section>
+
+  <section class="stack" aria-labelledby="h-data">
+    <h2 id="h-data">Data dan metode</h2>
+    <p class="prose">Pesan diambil dari kanal publik dengan Telethon secara baca-saja, lalu diolah oleh enam langkah analisis. Semua parameter tersimpan di <code>config.yaml</code>, jadi setiap angka di laporan ini bisa dihitung ulang.</p>
+    <div class="tiles" id="tiles"></div>
+    <div class="pipeline">
+      <div class="step"><b>collect.py</b><span>Riwayat pesan sejak 1 April 2026, nomor telepon & email disamarkan.</span></div>
+      <div class="step"><b>mentions</b><span>Kode 4 huruf dicocokkan ke 831 emiten IDX. Kode yang juga kata umum (PADA, NAIK, CUAN…) butuh <code>$</code>/<code>#</code> atau kata konteks.</span></div>
+      <div class="step"><b>dedup</b><span>MinHash-LSH, shingle 5 karakter, Jaccard ≥ 0,8.</span></div>
+      <div class="step"><b>graph</b><span>Edge bila dua kanal menyebut ticker sama dalam 30 menit, plus edge forward.</span></div>
+      <div class="step"><b>bursts</b><span>Mention per jam, z-score &gt; 3 terhadap 7 hari sebelumnya.</span></div>
+      <div class="step"><b>prices</b><span>Volume H+1 dibanding rata-rata 20 hari bursa sebelum burst.</span></div>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="h-isi">
+    <h2 id="h-isi">Apa yang dibicarakan kanal</h2>
+    <div class="two">
+      <figure>
+        <div class="chart h420"><canvas id="chTop" aria-label="Ticker paling sering disebut"></canvas></div>
+        <figcaption>15 ticker paling sering disebut (jumlah pesan). Saham besar dan konglomerasi mendominasi.</figcaption>
+      </figure>
+      <figure class="stack">
+        <div class="sbar" id="kindsAll"></div>
+        <div class="legend" id="kindsLegend"></div>
+        <figcaption>Jenis pesan yang menyebut ticker, diklasifikasi dengan kata kunci. Separuh mention berasal dari laporan pasar rutin (top gainer, ringkasan sesi, jadwal dividen), bukan dari ajakan membeli.</figcaption>
+        <div class="tablewrap"><table id="tblKindsCh"></table></div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="h-burst">
+    <h2 id="h-burst">Burst lintas kanal dan volume perdagangan</h2>
+    <p class="prose">Burst adalah jam ketika sebuah ticker disebut jauh lebih sering dari biasanya. Kalau beberapa kanal ikut menyebut di jam yang sama, apakah volume esok harinya ikut naik? Sebagai pembanding dipakai semua hari bursa pada saham yang sama periode ini.</p>
+    <div class="two">
+      <figure>
+        <div class="chart h340"><canvas id="chVol" aria-label="Median rasio volume"></canvas></div>
+        <figcaption>Median rasio volume terhadap rata-rata 20 hari bursa sebelum burst. H0 = hari burst, H+1 = hari bursa berikutnya. Nilai 1,0 berarti volume normal.</figcaption>
+      </figure>
+      <figure class="stack">
+        <div class="sbar" id="kindsBurst"></div>
+        <div class="legend" id="kindsBurstLegend"></div>
+        <figcaption>Jenis pesan yang mendominasi tiap burst. Burst yang melibatkan ≥3 kanal paling sering dipicu laporan rutin dan berita, sedangkan burst satu kanal didominasi ajakan atau rekomendasi.</figcaption>
+      </figure>
+    </div>
+    <div class="callout" id="volCallout"></div>
+  </section>
+
+  <section class="stack" aria-labelledby="h-kasus">
+    <h2 id="h-kasus">Lima studi kasus</h2>
+    <p class="prose">Saham dipilih dari skor sinyal (jumlah burst lintas kanal, cluster near-duplicate, dan jumlah kanal) supaya mewakili pola yang berbeda. Batang menunjukkan jumlah pesan per hari, garis menunjukkan harga penutupan, dan segitiga menandai hari burst.</p>
+    <div id="cases" class="stack" style="gap:48px"></div>
+  </section>
+
+  <section class="stack" aria-labelledby="h-jaringan">
+    <h2 id="h-jaringan">Jaringan kanal</h2>
+    <div class="two">
+      <figure>
+        <svg class="net" id="net" viewBox="0 0 640 520" role="img" aria-label="Graf co-posting antarkanal"></svg>
+        <figcaption>Graf co-posting dan forward antar 34 kanal. Ukuran titik sesuai jumlah pesan, warna sesuai komunitas (modularity), tebal garis sesuai bobot ternormalisasi.</figcaption>
+      </figure>
+      <div class="stack">
+        <h3>Corong dari grup berbayar</h3>
+        <p>Edge forward paling tebal berasal dari grup premium atau privat yang diteruskan ke kanal publik pasangannya. Pola ini mirip etalase: isi grup berbayar dipamerkan untuk menarik anggota baru.</p>
+        <div class="tablewrap"><table id="tblFwd"></table></div>
+        <h3>Co-posting terkuat</h3>
+        <p>Pasangan dengan bobot tertinggi umumnya sama-sama menerbitkan laporan sesi pada jam yang sama (12.00 dan 16.00 WIB). Kedekatan waktu seperti ini struktural dan belum tentu tanda koordinasi.</p>
+        <div class="tablewrap"><table id="tblCopost"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stack prose" aria-labelledby="h-batas">
+    <h2 id="h-batas">Keterbatasan</h2>
+    <ul class="plain">
+      <li>Sampel 34 kanal dipilih dari pencarian web dan direktori, tidak mewakili seluruh ekosistem. Grup diskusi dan grup privat tidak ikut.</li>
+      <li>Asosiasi dengan volume tidak membuktikan sebab-akibat. Volume di hari burst (H0) sudah tinggi, jadi sebagian besar burst mengikuti pergerakan pasar, bukan mendahuluinya.</li>
+      <li>Jenis pesan diklasifikasi dengan kata kunci sederhana dan bisa salah untuk pesan campuran.</li>
+      <li>Pesan yang sudah dihapus admin tidak terekam, dan jumlah views adalah angka saat pengambilan, bukan saat terbit.</li>
+      <li>Data harga dari endpoint publik Yahoo Finance, bukan feed resmi BEI.</li>
+      <li>Pola yang dilaporkan adalah sinyal untuk ditinjau manual, bukan bukti manipulasi oleh kanal mana pun.</li>
+    </ul>
+    <h3>Langkah berikutnya</h3>
+    <ul class="plain">
+      <li>Menyaring laporan rutin sebelum deteksi burst, supaya yang tersisa lebih dekat ke promosi.</li>
+      <li>Uji lead-lag dengan data intraday: apakah mention muncul sebelum atau sesudah harga bergerak.</li>
+      <li>Mendeteksi klaim kinerja ("done target", "hit target", "BEFORE/AFTER") sebagai fitur tersendiri.</li>
+    </ul>
+  </section>
+
+  <section class="stack" aria-labelledby="h-lampiran">
+    <h2 id="h-lampiran">Lampiran</h2>
+    <h3>Skor sinyal 15 ticker teratas</h3>
+    <div class="tablewrap"><table id="tblScore"></table></div>
+    <p class="foot">Skor = 2 × burst lintas kanal + cluster near-duplicate lintas kanal + jumlah kanal maksimum dalam satu burst + jumlah kanal maksimum dalam satu cluster.</p>
+    <h3>Menjalankan ulang</h3>
+<pre>python collect.py --since 2026-04-01
+python fetch_prices.py
+python analyze.py
+python report.py --ticker ENRG --from 2026-04-01 --to 2026-10-24</pre>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const DATA = /*__DATA__*/null;
+
+const fmt = new Intl.NumberFormat("id-ID");
+const fmt1 = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const fmt2 = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = v => Math.round(v * 100) + "%";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $ = id => document.getElementById(id);
+const C = DATA.corpus;
+
+// ---------- statis ----------
+$("meta").innerHTML = [
+  `Periode ${DATA.periodLabel}`, `${fmt.format(C.messages)} pesan`, `${C.channels} kanal publik`,
+  `Data per ${DATA.generated}`].map(t => `<span>${esc(t)}</span>`).join("");
+
+const vt = Object.fromEntries(DATA.volume_test.map(r => [r.group, r]));
+const bs = Object.fromEntries(DATA.extra.burst_summary.map(r => [r.group, r]));
+const findings = [
+  { big: pct(C.share_routine_news), text: `mention ticker berasal dari laporan pasar rutin dan berita. Ajakan atau rekomendasi hanya ${pct(C.share_promo)}.` },
+  { big: fmt2.format(bs["≥3 kanal"].median_h0) + "×", text: `median volume di hari burst yang melibatkan ≥3 kanal, dan ${fmt2.format(bs["≥3 kanal"].median_h1)}× pada H+1. Hari bursa biasa: ${fmt2.format(DATA.volume_test_ctrl_same_tickers.median)}×. Kanal ramai ketika pasar sudah ramai.` },
+  { big: pct(bs["1 kanal"].share_promo_dominant), text: `burst satu kanal didominasi ajakan atau rekomendasi, tetapi volume H+1 justru di bawah normal (median ${fmt2.format(bs["1 kanal"].median_h1)}×).` },
+  { big: fmt.format(DATA.fwdTotalPremium), text: `pesan diteruskan dari grup premium/privat ke kanal publik pasangannya. Burst lintas kanal yang berisi ajakan umumnya klaim "target tercapai" setelah harga naik, untuk memasarkan keanggotaan.` },
+];
+$("findings").innerHTML = findings.map(f => `<div class="finding"><div class="big">${esc(f.big)}</div><p>${esc(f.text)}</p></div>`).join("");
+
+$("tiles").innerHTML = [
+  [fmt.format(C.messages), "pesan dari " + C.channels + " kanal"],
+  [fmt.format(C.mention_rows), "mention pada " + fmt.format(C.tickers_mentioned) + " ticker"],
+  [fmt.format(C.dup_clusters_cross), "cluster near-duplicate lintas kanal"],
+  [fmt.format(C.bursts), "jam burst, " + C.bursts_multi3 + " melibatkan ≥3 kanal"],
+  [fmt.format(C.forwards), "pesan hasil forward"],
+].map(([b, s]) => `<div class="tile"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("");
+
+const KINDS = [["laporan rutin", "--c3"], ["berita", "--c1"], ["ajakan/rekomendasi", "--hot"], ["lainnya", "--c5"]];
+function stacked(el, rows, legendEl) {
+  el.innerHTML = rows.map(r => {
+    const total = KINDS.reduce((a, [k]) => a + (r[k] || 0), 0) || 1;
+    const segs = KINDS.map(([k, v]) => {
+      const share = (r[k] || 0) / total;
+      return share > 0 ? `<div class="sbar-seg" style="width:${share * 100}%;background:var(${v})" title="${esc(k)}: ${fmt.format(r[k])}">${share > .08 ? pct(share) : ""}</div>` : "";
+    }).join("");
+    return `<div class="sbar-row"><span>${esc(r.label)}</span><div class="sbar-track">${segs}</div></div>`;
+  }).join("");
+  legendEl.innerHTML = KINDS.map(([k, v]) => `<span><i style="background:var(${v})"></i>${esc(k)}</span>`).join("");
+}
+stacked($("kindsAll"), [{ label: "Semua mention", ...DATA.extra.mention_kinds_total }], $("kindsLegend"));
+stacked($("kindsBurst"), DATA.extra.burst_kinds.map(r => ({ label: "Burst " + r.group, ...r })), $("kindsBurstLegend"));
+
+$("tblKindsCh").innerHTML = `<thead><tr><th>Kanal</th><th class="r">Mention</th><th class="r">Rutin</th><th class="r">Berita</th><th class="r">Ajakan</th></tr></thead><tbody>` +
+  DATA.extra.channel_kinds.slice(0, 8).map(r => `<tr><td class="mono">@${esc(r.channel)}</td><td class="r">${fmt.format(r.total)}</td>` +
+    `<td class="r">${pct(r["laporan rutin"] / r.total)}</td><td class="r">${pct(r.berita / r.total)}</td><td class="r">${pct(r["ajakan/rekomendasi"] / r.total)}</td></tr>`).join("") + "</tbody>";
+
+const v3 = vt["Burst ≥3 kanal"];
+$("volCallout").innerHTML = `<b>Cara membaca.</b><p>Burst ≥3 kanal memang diikuti volume H+1 yang lebih tinggi (median ${fmt2.format(v3.median)}×, ${pct(v3.share_2x)} di atas 2×, dibanding ${pct(DATA.volume_test_ctrl_same_tickers.share_2x)} pada hari biasa). Tetapi volume di hari burst sendiri lebih tinggi lagi (${fmt2.format(bs["≥3 kanal"].median_h0)}×), dan ${pct(bs["≥3 kanal"].share_routine_news_majority)} burst itu didominasi laporan rutin atau berita. Jadi lonjakan perhatian di Telegram lebih banyak mengikuti pergerakan pasar daripada memicunya.</p>`;
+
+$("tblFwd").innerHTML = `<thead><tr><th>Sumber</th><th>Kanal publik</th><th class="r">Forward</th></tr></thead><tbody>` +
+  DATA.top_forward_edges.slice(0, 6).map(r => `<tr><td>${esc(r.source)}</td><td class="mono">@${esc(r.target)}</td><td class="r">${fmt.format(r.raw)}</td></tr>`).join("") + "</tbody>";
+$("tblCopost").innerHTML = `<thead><tr><th>Pasangan kanal</th><th class="r">Kejadian</th><th class="r">Bobot</th></tr></thead><tbody>` +
+  DATA.top_copost_edges.slice(0, 6).map(r => `<tr><td class="mono">@${esc(r.a)} – @${esc(r.b)}</td><td class="r">${fmt.format(r.raw)}</td><td class="r">${fmt2.format(r.norm)}</td></tr>`).join("") + "</tbody>";
+
+$("tblScore").innerHTML = `<thead><tr><th>Ticker</th><th>Emiten</th><th class="r">Mention</th><th class="r">Kanal</th><th class="r">Burst ≥2 kanal</th><th class="r">Maks. vol H+1</th><th class="r">Cluster</th><th class="r">Skor</th></tr></thead><tbody>` +
+  DATA.score_table.map(r => `<tr><td class="mono">${esc(r.ticker)}</td><td>${esc(r.name)}</td><td class="r">${fmt.format(r.mentions)}</td><td class="r">${r.channels}</td>` +
+    `<td class="r">${r.bursts_multi}</td><td class="r">${r.burst_max_ratio ? fmt2.format(r.burst_max_ratio) + "×" : "–"}</td><td class="r">${r.dup_clusters}</td><td class="r">${fmt.format(r.score)}</td></tr>`).join("") + "</tbody>";
+
+// ---------- studi kasus ----------
+const PATTERN = { hot: "hot", warn: "warn", acc: "acc", quiet: "quiet" };
+$("cases").innerHTML = DATA.cases.map((c, i) => {
+  const multi = c.bursts.filter(b => b.channels >= 2).length;
+  const ratios = c.bursts.map(b => b.ratio).filter(v => v != null);
+  const medRatio = ratios.length ? ratios.sort((a, b) => a - b)[Math.floor(ratios.length / 2)] : null;
+  const tl = c.burst_msgs.map(m => `<div class="tl-item"><span class="tl-time">${esc(m.time)}</span><div><span class="tl-ch">@${esc(m.channel)}</span> <span class="foot">· ${fmt.format(m.views)} views</span><div class="tl-text">${esc(m.text.length > 150 ? m.text.slice(0, 148) + "…" : m.text)}</div></div></div>`).join("");
+  return `<article class="case" id="kasus-${esc(c.ticker.toLowerCase())}">
+    <div class="case-head"><span class="case-no">Kasus ${i + 1}</span><span><span class="ticker">${esc(c.ticker)}</span> <span class="pill ${PATTERN[c.tone]}">${esc(c.pattern)}</span></span><span class="case-name">${esc(c.name)}</span></div>
+    <div class="case-grid">
+      <figure><div class="chart h300"><canvas id="ch-${esc(c.ticker)}"></canvas></div>
+        <figcaption>Pesan per hari yang menyebut ${esc(c.ticker)} (batang) dan harga penutupan (garis). Segitiga merah: burst ≥3 kanal, oranye: 2 kanal, abu: 1 kanal.</figcaption></figure>
+      <dl class="facts">
+        <dt>Pesan yang menyebut</dt><dd>${fmt.format(c.mentions)}</dd>
+        <dt>Kanal berbeda</dt><dd>${c.channels}</dd>
+        <dt>Jam burst (≥2 kanal)</dt><dd>${c.bursts.length} (${multi})</dd>
+        <dt>Median volume H+1</dt><dd>${medRatio != null ? fmt2.format(medRatio) + "×" : "–"}</dd>
+        <dt>Kanal teratas</dt><dd>@${esc(c.top_channels[0][0])} (${pct(c.top_channels[0][1] / c.mentions)})</dd>
+        <dt>Cluster near-duplicate</dt><dd>${c.dup_clusters.length}</dd>
+      </dl>
+    </div>
+    <div class="two">
+      <div class="stack"><h3 style="font-size:1.05rem">Isi jam burst ${esc(c.burst_label)}</h3><div class="timeline">${tl}</div></div>
+      <div class="stack"><h3 style="font-size:1.05rem">Bacaan</h3><p class="reading">${c.reading}</p></div>
+    </div>
+  </article>`;
+}).join("");
+
+// ---------- grafik ----------
+const charts = [];
+function baseOpts() {
+  const ink = css("--ink"), muted = css("--muted"), rule = css("--rule");
+  Chart.defaults.font.family = css("--font-body");
+  Chart.defaults.color = muted;
+  return { ink, muted, rule };
+}
+function drawCharts() {
+  charts.splice(0).forEach(ch => ch.destroy());
+  const { ink, muted, rule } = baseOpts();
+  const grid = { color: rule, drawTicks: false };
+
+  const top = DATA.top_tickers.slice(0, 15);
+  charts.push(new Chart($("chTop"), {
+    type: "bar",
+    data: { labels: top.map(t => t.ticker), datasets: [{ data: top.map(t => t.mentions), backgroundColor: css("--accent"), borderRadius: 2, barPercentage: .75 }] },
+    options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false },
+      tooltip: { callbacks: { title: it => `${top[it[0].dataIndex].ticker} · ${top[it[0].dataIndex].name}`, label: it => `${fmt.format(it.raw)} pesan, ${top[it.dataIndex].channels} kanal` } } },
+      scales: { x: { grid, ticks: { padding: 6 } }, y: { grid: { display: false }, ticks: { color: ink, font: { family: css("--font-data"), size: 11 } } } } }
+  }));
+
+  const groups = ["Semua hari", "Burst 1 kanal", "Burst 2 kanal", "Burst ≥3 kanal"];
+  const h1 = [DATA.volume_test_ctrl_same_tickers.median, bs["1 kanal"].median_h1, bs["2 kanal"].median_h1, bs["≥3 kanal"].median_h1];
+  const h0 = [null, bs["1 kanal"].median_h0, bs["2 kanal"].median_h0, bs["≥3 kanal"].median_h0];
+  charts.push(new Chart($("chVol"), {
+    type: "bar",
+    data: { labels: groups, datasets: [
+      { label: "H0 (hari burst)", data: h0, backgroundColor: css("--warn"), borderRadius: 2 },
+      { label: "H+1", data: h1, backgroundColor: css("--accent"), borderRadius: 2 } ] },
+    options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } },
+      tooltip: { callbacks: { label: it => `${it.dataset.label}: ${it.raw == null ? "–" : fmt2.format(it.raw) + "×"}` } } },
+      scales: { y: { grid, beginAtZero: true, ticks: { callback: v => fmt1.format(v) + "×" } }, x: { grid: { display: false } } } }
+  }));
+
+  DATA.cases.forEach(c => {
+    const labels = c.daily.map(d => d[0]);
+    const priceMap = Object.fromEntries(c.prices.map(p => [p[0], p[1]]));
+    const dayCount = Object.fromEntries(c.daily.map(d => [d[0], d[1]]));
+    const burstPts = c.bursts.map(b => {
+      const day = b.hour.slice(0, 10);
+      return { x: day, y: (dayCount[day] || 0), ch: b.channels, b };
+    });
+    const colorFor = n => n >= 3 ? css("--hot") : n === 2 ? css("--warn") : css("--quiet");
+    charts.push(new Chart($("ch-" + c.ticker), {
+      data: { labels, datasets: [
+        { type: "bar", label: "Pesan/hari", data: c.daily.map(d => d[1]), backgroundColor: css("--accent-soft"), borderColor: css("--accent"), borderWidth: { top: 1 }, yAxisID: "y", order: 3, barPercentage: 1, categoryPercentage: 1 },
+        { type: "line", label: "Harga penutupan", data: labels.map(d => priceMap[d] ?? null), borderColor: ink, borderWidth: 1.4, pointRadius: 0, spanGaps: true, yAxisID: "y1", order: 1, tension: 0 },
+        { type: "scatter", label: "Burst", data: burstPts, pointStyle: "triangle", pointRadius: 7, pointHoverRadius: 9,
+          backgroundColor: burstPts.map(p => colorFor(p.ch)), borderColor: burstPts.map(p => colorFor(p.ch)), yAxisID: "y", order: 0 } ] },
+      options: { maintainAspectRatio: false, interaction: { mode: "nearest", intersect: false },
+        plugins: { legend: { display: false }, tooltip: { callbacks: {
+          label: it => it.dataset.type === "scatter" || it.dataset.label === "Burst"
+            ? `Burst ${it.raw.b.hour} UTC: ${it.raw.b.count} pesan, ${it.raw.b.channels} kanal, z=${fmt1.format(it.raw.b.z)}${it.raw.b.ratio != null ? ", vol H+1 " + fmt2.format(it.raw.b.ratio) + "×" : ""}`
+            : `${it.dataset.label}: ${fmt.format(it.raw)}` } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 7, callback: function (v) { const d = this.getLabelForValue(v); return new Date(d + "T00:00:00Z").toLocaleDateString("id-ID", { month: "short", day: "numeric", timeZone: "UTC" }); } } },
+          y: { grid, beginAtZero: true, title: { display: true, text: "pesan" }, ticks: { precision: 0 } },
+          y1: { position: "right", grid: { display: false }, title: { display: true, text: "harga (Rp)" }, ticks: { callback: v => fmt.format(v) } } } }
+    }));
+  });
+}
+
+// ---------- graf jaringan (SVG) ----------
+function drawNetwork() {
+  const svg = $("net"), W = 640, H = 520, pad = 46;
+  const nodes = DATA.network.nodes, edges = DATA.network.edges;
+  const xs = nodes.map(n => n.x), ys = nodes.map(n => n.y);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const sx = x => pad + (x - x0) / (x1 - x0 || 1) * (W - 2 * pad), sy = y => pad + (y - y0) / (y1 - y0 || 1) * (H - 2 * pad);
+  const pos = Object.fromEntries(nodes.map(n => [n.id, [sx(n.x), sy(n.y)]]));
+  const maxW = Math.max(...edges.map(e => e.w), 1e-9), maxM = Math.max(...nodes.map(n => n.messages), 1);
+  const commColor = i => ["--c1", "--c2", "--c3", "--c4"][i] ? `var(${["--c1", "--c2", "--c3", "--c4"][i]})` : "var(--c5)";
+  const topLabels = new Set([...nodes].sort((a, b) => b.strength - a.strength).slice(0, 12).map(n => n.id));
+  let s = edges.map(e => {
+    const [a, b] = [pos[e.s], pos[e.t]];
+    return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="var(--muted)" stroke-opacity="${(0.18 + 0.6 * Math.sqrt(e.w / maxW)).toFixed(2)}" stroke-width="${(0.6 + 5 * Math.sqrt(e.w / maxW)).toFixed(2)}"/>`;
+  }).join("");
+  s += nodes.map(n => {
+    const [x, y] = pos[n.id], r = 3.5 + 14 * Math.sqrt(n.messages / maxM);
+    const label = topLabels.has(n.id) ? `<text x="${(x + r + 3).toFixed(1)}" y="${(y + 4).toFixed(1)}">${esc(n.id)}</text>` : "";
+    return `<g><title>@${esc(n.id)} · ${fmt.format(n.messages)} pesan</title><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${commColor(n.community)}" stroke="var(--surface)" stroke-width="1.5"/>${label}</g>`;
+  }).join("");
+  svg.innerHTML = s;
+}
+
+drawNetwork();
+function safeDraw() { if (window.Chart) drawCharts(); }
+safeDraw();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", safeDraw);
+new MutationObserver(safeDraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>

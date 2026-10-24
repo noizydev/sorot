@@ -103,6 +103,23 @@ Setiap langkah membangun ulang tabelnya di `messages.db`:
 volume, cluster near-duplicate, pasangan kanal co-posting) dan `.csv` (satu baris per pesan dengan
 penanda jam burst dan cluster). Tanggal dibaca sebagai UTC, inklusif.
 
+## Riset (laporan HTML)
+
+Skrip di `research/` menghasilkan `reports/laporan_riset_sorot.html` dari hasil `analyze.py`:
+
+```bash
+.venv/Scripts/python research/validate_tickers.py   # opsional: bangun ulang idx_tickers.csv + prices.csv dari kode di pesan
+.venv/Scripts/python analyze.py
+.venv/Scripts/python research/research_data.py      # skor, uji volume, jaringan, studi kasus -> data/analysis/research.json
+.venv/Scripts/python research/research_kinds.py     # jenis pesan di jam burst, volume H0 vs H+1
+.venv/Scripts/python research/build_report.py       # research.json + template.html -> reports/
+```
+
+`validate_tickers.py` memeriksa setiap token 4 huruf kapital yang muncul di ≥ 5 pesan ke Yahoo Finance (`.JK`) dan
+mempertahankan tanda `ambiguous` yang sudah ada. Studi kasus bisa diganti dengan
+`research_data.py --cases TICKER1,TICKER2 --hours TICKER1=YYYY-MM-DDTHH`. Teks "Bacaan" per kasus ditulis di
+`build_report.py`; untuk ticker baru tambahkan entrinya di sana.
+
 ## Tes
 
 ```bash
