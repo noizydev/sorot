@@ -122,7 +122,11 @@ def build_report(conn, cfg, ticker, date_from, date_to):
         if ratio is not None and pd.notna(ratio):
             vol_txt = f" | volume H+1 ({b.h1_date}) = {ratio:.2f}x rata-rata {cfg['prices']['baseline_days']} hari"
         elif "volume_ratio_h1" in bursts.columns:
-            vol_txt = " | volume H+1 belum tersedia"
+            if b.h1_date is None or pd.isna(b.h1_date):
+                vol_txt = " | volume H+1 belum tersedia di prices.csv"
+            else:
+                vol_txt = (f" | riwayat harga < {cfg['prices']['baseline_days']} hari bursa sebelum burst "
+                           "(perpanjang --from di fetch_prices.py)")
         lines.append(f"  {pd.Timestamp(b.hour):%Y-%m-%d %H:%M} UTC  mention={b.count} kanal={b.n_channels} "
                      f"z={b.z:.1f}{vol_txt}")
 
