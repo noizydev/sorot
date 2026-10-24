@@ -6,6 +6,7 @@
 # Data hasil koleksi & log (raw JSONL berisi teks tanpa penyamaran)
 data/
 logs/
+reports/
 
 # Python
 .venv/

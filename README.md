@@ -74,6 +74,35 @@ dilanjutkan dari id terakhir (tidak mengisi mundur).
 Catatan: pesan yang sudah dihapus admin tidak dikembalikan Telegram, sehingga tampak sebagai
 celah pada `message_id`. Pesan servis (pin, ganti judul) ikut tersimpan dengan `text` kosong.
 
+## Analisis
+
+Semua parameter ada di `config.yaml`. Butuh dua file input:
+
+| File | Kolom | Wajib |
+|---|---|---|
+| `idx_tickers.csv` | `ticker` (4 huruf, sufiks `.JK` dibuang); opsional `ambiguous` = 1 untuk kode yang juga kata umum | ya |
+| `prices.csv` | `date` (YYYY-MM-DD), `ticker`, `volume`; kolom lain diabaikan | hanya untuk langkah `prices` |
+
+```bash
+.venv/Scripts/python analyze.py                     # mentions, dedup, graph, bursts, prices
+.venv/Scripts/python analyze.py --steps dedup,graph # sebagian langkah
+.venv/Scripts/python report.py --ticker BUMI --from 2026-04-01 --to 2026-06-30
+```
+
+Setiap langkah membangun ulang tabelnya di `messages.db`:
+
+| Langkah | Tabel | Ringkas |
+|---|---|---|
+| `mentions` | `mentions` | Token 4 huruf kapital yang ada di `idx_tickers.csv`. Kode yang juga kata umum (`tickers.common_words` atau kolom `ambiguous`) hanya dihitung jika berawalan `$`/`#` atau ada kata konteks (TP, target, entry, SL, buy, ...) dalam 5 kata. Satu baris per (pesan, ticker). |
+| `dedup` | `dup_clusters`, `dup_members` | MinHash-LSH atas shingle 5 karakter dari teks ternormalisasi (huruf kecil, tanpa URL/tanda baca/emoji), Jaccard ≥ 0.8, kandidat LSH diverifikasi ulang. Mencatat ukuran, jumlah kanal, dan rentang waktu cluster. |
+| `graph` | `graph_edges` + `data/analysis/coposting.gexf` | Edge co-posting: pasangan pesan dari dua kanal yang menyebut ticker sama dalam 30 menit, dinormalisasi `raw / sqrt(n_a * n_b)` (n = jumlah pesan kanal). Edge forward: kanal sumber → kanal penerus, dinormalisasi terhadap jumlah pesan kanal penerus. GEXF bisa dibuka di Gephi. |
+| `bursts` | `bursts` | Mention per ticker per jam (jam kosong = 0), z-score terhadap rolling 7 hari sebelumnya; ditandai bila z > 3 dan minimal 3 mention. `min_std` mencegah z tak hingga saat baseline nol. |
+| `prices` | `burst_volume` | Tanggal burst dalam WIB; H+1 = hari bursa pertama setelahnya; rasio = volume H+1 / rata-rata volume 20 hari bursa sebelum tanggal burst. Kosong bila data belum ada. |
+
+`report.py` menulis `reports/<TICKER>_<from>_<to>.txt` (ringkasan: mention per kanal, burst + rasio
+volume, cluster near-duplicate, pasangan kanal co-posting) dan `.csv` (satu baris per pesan dengan
+penanda jam burst dan cluster). Tanggal dibaca sebagai UTC, inklusif.
+
 ## Tes
 
 ```bash

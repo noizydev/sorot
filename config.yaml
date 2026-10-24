@@ -1,0 +1,56 @@
+# Parameter analisis SOROT. Path relatif dihitung dari folder file ini.
+
+paths:
+  db: data/messages.db           # input (tabel messages) sekaligus tempat tabel hasil analisis
+  raw_dir: data/raw              # dipakai untuk memetakan channel_id -> username (edge forward)
+  tickers_csv: idx_tickers.csv   # wajib: kolom `ticker`; opsional kolom `ambiguous` (1/0)
+  prices_csv: prices.csv         # opsional: kolom `date`, `ticker`, `volume` (data EOD)
+  output_dir: data/analysis      # file graf (GEXF)
+  reports_dir: reports           # keluaran report.py
+
+tickers:
+  # Kode yang juga kata umum hanya dihitung bila berawalan $/# atau ada kata konteks di dekatnya.
+  # Daftar ini boleh berisi kata apa saja; yang dipakai hanya irisannya dengan idx_tickers.csv.
+  common_words: [
+    BELI, JUAL, BUMI, CUAN, EMAS, BUKA, BANK, BAIK, BEST, GOOD, MAIN, DATA, LAND, HOME,
+    LIFE, FOOD, FAST, SAFE, "TRUE", HOPE, KING, CITY, BALI, ROTI, KOPI, NASI, ENAK, AMAN,
+    ASLI, PADI, MINA, RAJA, DEWA, GAMA, POLA, BOLA, MEJA, SOFA, KAYU, BAUT, TOOL, WOOD,
+    FIRE, FISH, DUCK, BIKE, BOAT, PORT, ZONE, TECH, IDEA, PLAN, CASH, UANG, GOLD, OPEN,
+    HOLD, SELL, LONG, WAIT, NEXT, NEWS, INFO, LIVE, FREE, PUMP, DUMP, HAKA, HAKI, AUTO,
+    PAGI, SORE, HARI, JAVA, ACES, LUCK, SURE, HERO, BOSS, DIVA, FORU, MARI, TAMA, TELE,
+    WIFI, POWR, NICE, BLUE, CARE, CLAY, COAL, DOOH, GULA, HAIS, KIDS, MEGA, NOVA, OKAS,
+    PART, PEGE, PICO, PURA, RICH, SAME, SONA, SOUL, STAR, TOTO, TRIS, VICI, WOWS
+  ]
+  context_window: 5        # jarak maksimum (dalam kata) antara ticker dan kata konteks
+  context_words: [tp, target, entry, sl, buy, sell, beli, jual, avg, cl, cutloss, stoploss]
+  allow_lowercase_with_prefix: true   # "$bbca" / "#bbca" ikut dihitung
+
+dedup:
+  shingle_size: 5          # shingle karakter
+  threshold: 0.8           # Jaccard minimum untuk dianggap near-duplicate
+  num_perm: 128
+  seed: 1
+  min_chars: 40            # teks ternormalisasi yang lebih pendek diabaikan ("selamat pagi" dsb.)
+  strip_urls: true
+  strip_digits: false      # true = abaikan perbedaan angka (harga/target) saat membandingkan
+
+coposting:
+  window_minutes: 30
+  normalization: sqrt      # sqrt: raw / sqrt(n_a * n_b) | min: raw / min(n_a, n_b)
+  forward_weight: 1.0      # bobot edge forward saat digabung ke atribut `weight` graf
+
+bursts:
+  window_days: 7           # baseline rolling (jam sebelumnya, jam berjalan tidak ikut)
+  z_threshold: 3.0
+  min_history_hours: 24    # minimal jam riwayat sebelum z-score dihitung
+  min_count: 3             # minimal mention dalam jam itu agar bisa ditandai burst
+  min_std: 1.0             # batas bawah std baseline agar z tidak meledak saat baseline nol
+  min_total_mentions: 5    # ticker dengan total mention lebih sedikit tidak dianalisis
+
+prices:
+  baseline_days: 20        # rata-rata volume N hari bursa sebelum tanggal burst
+  utc_offset_hours: 7      # WIB; tanggal burst ditentukan dalam zona ini
+
+report:
+  sample_chars: 160        # panjang cuplikan teks di ringkasan
+  top_n: 10
