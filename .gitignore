@@ -1,0 +1,14 @@
+# Kredensial & session Telegram (session = akses penuh ke akun)
+.env
+*.session
+*.session-journal
+
+# Data hasil koleksi & log (raw JSONL berisi teks tanpa penyamaran)
+data/
+logs/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/

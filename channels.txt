@@ -1,0 +1,37 @@
+# Kanal publik saham IDX (aktif/semi-aktif) dari channels_candidates.csv
+# Satu username per baris; baris diawali # diabaikan.
+SahamTalkID
+tumbuhkayasaham
+Idxtradingcomm
+wigunainvestment
+creativetrader
+freesinyalsaham
+skydrugzstock
+RuangTraderIndonesia
+ruangsahamacademy
+DemokrasiSahamChannel
+Research_PSI
+sahampemenang
+diskusi_saham
+persugihandigital
+BRIDSofficialchannel
+Sahamology
+investorcoffe
+BSS_SahamIndonesia
+gurusaham
+SahamDaily
+seirineinvestama
+fiboprincess
+cgsiidretailresearch
+rekomsahamritelumum
+sahampro
+KomunitasSantaiProfit
+dapursaham
+CalmTradingChannel
+tradingsantaiyuk
+HPXCommunity
+BusinessInsightKontan
+updateberitasaham
+StockWinTrader
+miraeassetdaewooo
+pilarmasresearch
