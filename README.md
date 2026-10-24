@@ -1,4 +1,4 @@
-# SOROT — Kolektor Pesan Kanal Telegram Saham
+# SOROT Kolektor Pesan Kanal Telegram Saham
 
 Mengumpulkan pesan dari kanal Telegram **publik** berbahasa Indonesia yang membahas saham IDX,
 untuk riset deteksi promosi saham terkoordinasi. Hanya membaca: tidak join kanal/grup dan
