@@ -1,0 +1,15 @@
+[server]
+# Hanya bisa dibuka dari komputer ini (data berisi pesan hasil koleksi).
+address = "localhost"
+port = 8501
+headless = true
+
+[client]
+toolbarMode = "minimal"   # sembunyikan tombol Deploy
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+primaryColor = "#0e6e66"
+font = "sans serif"

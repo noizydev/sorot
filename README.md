@@ -12,6 +12,10 @@ tidak mengirim pesan.
 | `masking.py` | Penyamaran nomor telepon & email sebelum masuk SQLite |
 | `channels.txt` | Daftar username kanal, satu per baris (`#` = komentar) |
 | `channels_candidates.csv` | Hasil pencarian kandidat kanal beserta sumber & catatan |
+| `app.py`, `dashboard/` | Dashboard web lokal (Streamlit) |
+| `analyze.py`, `analysis/` | Pipeline analisis (mentions, dedup, graf, burst, volume) |
+| `report.py` | Laporan teks + CSV per ticker |
+| `fetch_prices.py`, `research/` | Harga EOD dan laporan riset HTML |
 | `tests/` | Tes offline (tanpa jaringan/login) |
 | `.env.example` | Template kredensial |
 
@@ -25,6 +29,25 @@ cp .env.example .env    # isi TG_API_ID dan TG_API_HASH dari https://my.telegram
 
 Run pertama meminta nomor HP + OTP di terminal dan membuat `sorot.session`.
 File session setara akses penuh ke akun Telegram: jangan dibagikan atau di-commit.
+
+## Dashboard
+
+```bash
+.venv/Scripts/streamlit run app.py
+```
+
+Buka http://localhost:8501. Server hanya mendengarkan `localhost` (lihat `.streamlit/config.toml`).
+
+| Halaman | Isi |
+|---|---|
+| Ringkasan | Jumlah pesan/kanal/mention, pesan per minggu, ticker teratas, burst lintas kanal terbaru (klik baris untuk membuka sahamnya) |
+| Jelajah saham | Grafik pesan per hari + harga + volume + penanda burst; tab pesan (filter kanal/jenis/jam burst), burst (klik untuk melihat pesannya), near-duplicate, co-posting, ringkasan & unduh CSV |
+| Jaringan & kanal | Graf co-posting/forward interaktif dengan filter bobot dan sumber luar (grup premium), profil per kanal, tabel semua kanal |
+| Jalankan pipeline | Tombol pengumpulan pesan, pembaruan harga, analisis, dan laporan riset; log tampil langsung dan proses bisa dihentikan |
+| Kelola & ekspor | Edit `channels.txt`, `idx_tickers.csv` (tanda ambigu), `config.yaml` dengan validasi dan cadangan `.bak`; unduh CSV/ZIP, GEXF, laporan HTML |
+
+Login Telegram (OTP) tetap dilakukan sekali dari terminal; setelah `sorot.session` ada, pengumpulan bisa
+dijalankan dari dashboard. Hanya satu proses pipeline berjalan pada satu waktu.
 
 ## Pemakaian
 

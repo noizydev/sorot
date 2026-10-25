@@ -3,7 +3,6 @@
     python research/research_kinds.py
 """
 import json
-import re
 import sqlite3
 import sys
 from datetime import timedelta
@@ -11,31 +10,17 @@ from pathlib import Path
 
 import pandas as pd
 
-sys.stdout.reconfigure(encoding="utf-8")
 PROJECT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT))
+from analysis.kinds import classify  # noqa: E402
+
+sys.stdout.reconfigure(encoding="utf-8")
 RJSON = PROJECT / "data" / "analysis" / "research.json"
 conn = sqlite3.connect(f"{PROJECT}/data/messages.db")
 rd = lambda sql, p=(): pd.read_sql_query(sql, conn, params=p)  # noqa: E731
 utc = lambda s: pd.to_datetime(s, utc=True, format="ISO8601")  # noqa: E731
 
-REPORT = re.compile(r"market report|top gainer|top loser|sesi 1|sesi pertama|sesi kedua|session|day break|"
-                    r"closing review|market highlight|market review|#ihsg|top foreign|top local|"
-                    r"cashdeviden|stocksplit|exdate|recdate|rups", re.I)
-NEWS = re.compile(r"kontan|bisnis\.com|cnbc|katadata|emitennews|investor\.id|idx channel|iqplus|"
-                  r"https?://|msci|ftse|ojk|laporan keuangan|laba bersih", re.I)
-PROMO = re.compile(r"\brekom|\btp\d?\b|target|entry|\bbuy\b|\bbeli\b|join|vip|premium|cuan|sinyal|"
-                   r"tradingplan|swing|daytrade|belanja", re.I)
-
-
-def kind(text):
-    t = text or ""
-    if REPORT.search(t):
-        return "laporan rutin"
-    if NEWS.search(t):
-        return "berita"
-    if PROMO.search(t):
-        return "ajakan/rekomendasi"
-    return "lainnya"
+kind = classify
 
 
 msgs = rd("SELECT channel, message_id, date, text FROM messages")

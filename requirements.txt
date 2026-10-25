@@ -5,3 +5,5 @@ datasketch==2.0.0
 networkx==3.4.2
 pandas==2.3.3
 PyYAML==6.0.3
+streamlit==1.65.0
+plotly==7.1.0

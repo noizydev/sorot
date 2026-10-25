@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import yaml
@@ -7,8 +8,11 @@ DEFAULT_CONFIG = BASE_DIR / "config.yaml"
 
 
 def load_config(path=None):
-    """Baca config.yaml; path di bagian `paths` diubah jadi Path absolut relatif ke file config."""
-    path = Path(path) if path else DEFAULT_CONFIG
+    """Baca config.yaml; path di bagian `paths` diubah jadi Path absolut relatif ke file config.
+
+    Tanpa argumen, env SOROT_CONFIG (bila ada) menggantikan config.yaml bawaan.
+    """
+    path = Path(path or os.environ.get("SOROT_CONFIG") or DEFAULT_CONFIG)
     with open(path, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
     base = path.resolve().parent
