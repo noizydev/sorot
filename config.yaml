@@ -7,6 +7,12 @@ paths:
   prices_csv: prices.csv         # opsional: kolom `date`, `ticker`, `volume` (data EOD)
   output_dir: data/analysis      # file graf (GEXF)
   reports_dir: reports           # keluaran report.py
+  ownership_db: data/ownership.db                   # kepemilikan bitemporal, entitas, free float, ambang, label
+  shareholder_pdf_dir: data/shareholders/pdf        # PDF "Pemegang Saham di atas 1% (KSEI)" dari BEI
+  shareholder_parsed_dir: data/shareholders/parsed  # cache hasil parse per sha256
+  entity_aliases_csv: entity_aliases.csv            # opsional: penggabungan nama manual (alias,canonical)
+  transparency_log: data/transparency/log.jsonl     # entri label risiko (append-only)
+  transparency_heads: transparency/heads.jsonl      # tree head Merkle (ikut git sebagai jangkar publik)
 
 tickers:
   # Kode yang juga kata umum hanya dihitung bila berawalan $/# atau ada kata konteks di dekatnya.
@@ -54,3 +60,33 @@ prices:
 report:
   sample_chars: 160        # panjang cuplikan teks di ringkasan
   top_n: 10
+
+ownership:
+  # Entity resolution: skor RapidFuzz token_sort_ratio minimum agar dua nama dianggap entitas yang sama.
+  match_threshold_corporate: 93
+  match_threshold_individual: 97
+  issuer_match_threshold: 95     # nama pemegang -> emiten tercatat (rantai kepemilikan)
+  control_min: 0.25              # kepemilikan terintegrasi minimum agar dianggap pengendali
+  concentrated_pct: 5.0          # kelompok dengan total >= ini dianggap bukan free float
+  ff_min_pct: 7.5                # batas minimum free float (aturan BEI)
+  ff_warn_pct: 15.0
+
+threshold:
+  threshold_pct: 1.0             # ambang publikasi KSEI
+  near_band_pp: 0.5              # "tepat di bawah": pemegang yang sebelumnya < ambang + band
+  dilution_tolerance: 0.02       # kenaikan saham beredar > 2% dianggap dilusi yang bisa menjelaskan hilangnya pemegang
+
+risk:
+  cutoffs: {sedang: 25, tinggi: 50}
+  points:
+    ff_below_min: 35             # free float efektif < ff_min_pct
+    ff_below_warn: 15            # free float efektif < ff_warn_pct
+    ff_gap: 15                   # selisih free float proksi vs efektif >= ff_gap_pp
+    threshold_event: 10          # per kejadian pemegang hilang tepat di bawah 1% (maks 3)
+    threshold_pattern: 10        # bonus bila muncul-kembali / serentak / diganti pemegang baru
+    burst_cross: 5               # per burst >= 3 kanal (maks 3)
+    burst_promo: 15              # ada burst lintas kanal yang didominasi ajakan/rekomendasi
+    volume_spike: 10             # volume H+1 >= volume_spike_ratio x rata-rata setelah burst lintas kanal
+    dup_cross: 5                 # ada pesan near-duplicate di >= 3 kanal
+  ff_gap_pp: 5.0
+  volume_spike_ratio: 2.0

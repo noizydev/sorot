@@ -126,6 +126,27 @@ Setiap langkah membangun ulang tabelnya di `messages.db`:
 volume, cluster near-duplicate, pasangan kanal co-posting) dan `.csv` (satu baris per pesan dengan
 penanda jam burst dan cluster). Tanggal dibaca sebagai UTC, inklusif.
 
+## Kepemilikan, ambang 1%, dan label risiko
+
+Sumber: PDF **"Pemegang Saham di atas 1% (KSEI)"** dari Pengumuman BEI (sejak Maret 2026). Simpan lampiran data
+sebagai `data/shareholders/pdf/YYYYMMDD_lamp1_data.pdf` dan surat pengantarnya sebagai `YYYYMMDD_pengantar.pdf`
+(berisi waktu terbit, nomor pengumuman, dan nomor yang dikoreksi).
+
+```bash
+.venv/Scripts/python ownership.py all      # import -> freefloat -> threshold -> risk (+ publikasi ke log)
+.venv/Scripts/python ownership.py verify   # audit transparency log
+```
+
+| Langkah | Isi |
+|---|---|
+| `import` | Parse PDF (tabel bergaris, atau per posisi kolom untuk bulan tanpa garis; PDF terpotong diperbaiki dengan qpdf dan ditandai). Disimpan **bitemporal** di `data/ownership.db`: `valid_date` = posisi per tanggal KSEI, `tx_from`/`tx_to` = kapan versi itu berlaku menurut waktu terbit BEI. Koreksi menambah versi baru dan hanya menutup versi lama. |
+| `freefloat` | **Entity resolution**: normalisasi nama (PT/Tbk/gelar), cocok kabur RapidFuzz per blok, kesinambungan jumlah saham identik antarbulan, alias manual `entity_aliases.csv`. Entitas korporat yang namanya sama dengan emiten tercatat dihubungkan ke tickernya. **Kepemilikan terintegrasi** `T = W(I−W)⁻¹` memberi pemilik akhir lewat rantai perusahaan tercatat. **Free float efektif** = 100% − kelompok ≥5% (nama berbeda untuk entitas sama, atau perusahaan yang dikendalikan pengendali yang sama); akun nominee/kustodian dianggap publik. |
+| `threshold` | Pemegang yang tercatat di satu snapshot lalu hilang di snapshot berikutnya. **Tepat di bawah ambang** bila porsinya < 1% + 0,5 poin dan tidak terjelaskan dilusi; diperkuat bila muncul kembali, keluar serentak, atau diganti pemegang baru dekat ambang. |
+| `risk` | Skor 0–100 per emiten dari poin di `config.yaml` (`risk.points`), setiap poin dengan kalimat alasan. Semua label ditambahkan ke **transparency log** (Merkle tree RFC 6962): entri di `data/transparency/log.jsonl`, tree head di `transparency/heads.jsonl` (ikut git sebagai jangkar). `verify` menghitung ulang semua leaf, root, dan consistency proof. |
+
+Dashboard: halaman **Label risiko**, **Free float efektif**, dan **Ambang 1%**, serta tab *Kepemilikan & risiko*
+di Jalankan pipeline.
+
 ## Riset (laporan HTML)
 
 Skrip di `research/` menghasilkan `reports/laporan_riset_sorot.html` dari hasil `analyze.py`:

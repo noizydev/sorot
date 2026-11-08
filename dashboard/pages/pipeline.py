@@ -77,7 +77,8 @@ st.subheader("Proses")
 job_panel()
 
 # ---------- aksi ----------
-t1, t2, t3, t4 = st.tabs(["1 · Kumpulkan pesan", "2 · Perbarui harga", "3 · Analisis", "4 · Laporan riset"])
+t1, t2, t3, t4, t5 = st.tabs(["1 · Kumpulkan pesan", "2 · Perbarui harga", "3 · Analisis", "4 · Laporan riset",
+                               "5 · Kepemilikan & risiko"])
 
 with t1:
     st.markdown("Mengambil pesan baru dari kanal publik di `channels.txt` (incremental, hanya membaca).")
@@ -147,6 +148,28 @@ with t4:
     if report.exists():
         st.caption(f"Laporan terakhir: {datetime.fromtimestamp(report.stat().st_mtime):%d %b %Y %H.%M}")
         st.download_button("Unduh laporan HTML", report.read_bytes(), report.name, "text/html")
+
+with t5:
+    pdf_dir = cfg["paths"]["shareholder_pdf_dir"]
+    pdfs = sorted(pdf_dir.glob("*_lamp1_data.pdf")) if pdf_dir.exists() else []
+    shown_dir = pdf_dir.relative_to(ROOT).as_posix() if pdf_dir.is_relative_to(ROOT) else pdf_dir.as_posix()
+    st.markdown("Mengimpor PDF **Pemegang Saham di atas 1% (KSEI)** dari "
+                f"`{shown_dir}/` (nama `YYYYMMDD_lamp1_data.pdf`, surat pengantar "
+                "`YYYYMMDD_pengantar.pdf`), lalu menghitung entity resolution, free float efektif, kejadian ambang 1%, "
+                "dan label risiko yang dicatat ke transparency log.")
+    docs = data.documents()
+    st.caption(f"{len(pdfs)} PDF di folder · {len(docs)} dokumen sudah diimpor"
+               + (f" · posisi terakhir per {docs['valid_date'].max()}" if len(docs) else ""))
+    a, b, c3 = st.columns(3)
+    if a.button("Impor + hitung semua", type="primary", disabled=busy or not pdfs, icon=":material/account_tree:",
+                use_container_width=True):
+        run("kepemilikan", [["ownership.py", "all"]])
+    if b.button("Hitung ulang label risiko", disabled=busy or not data.ohas("ff_summary"), icon=":material/verified_user:",
+                use_container_width=True, help="Pakai data kepemilikan yang sudah ada + hasil analisis Telegram terbaru"):
+        run("label_risiko", [["ownership.py", "risk"]])
+    if c3.button("Audit transparency log", disabled=busy, icon=":material/fact_check:", use_container_width=True):
+        run("audit_log", [["ownership.py", "verify"]])
+    st.caption("Impor pertama membaca setiap PDF (±80 detik per file); berikutnya memakai cache per sha256.")
 
 with st.expander("Log pengumpulan (logs/collect.log)"):
     log = ROOT / "logs" / "collect.log"

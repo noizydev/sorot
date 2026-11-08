@@ -54,3 +54,14 @@ def open_channel(channel):
     st.session_state["channel"] = channel
     st.session_state["kanal_view_next"] = "Profil kanal"
     st.switch_page("dashboard/pages/kanal.py")
+
+
+def open_freefloat(ticker):
+    st.session_state["ff_open"] = ticker
+    st.session_state["ff_view_next"] = "Per emiten"
+    st.switch_page("dashboard/pages/freefloat.py")
+
+
+def open_risk(ticker):
+    st.session_state["risk_open"] = ticker
+    st.switch_page("dashboard/pages/risiko.py")

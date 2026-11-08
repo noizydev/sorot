@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from datetime import date
 
@@ -44,6 +45,13 @@ px = px[(px["date"].dt.date >= start) & (px["date"].dt.date <= end)]
 
 st.markdown(f"### {ticker} <span style='font-weight:400;font-size:1rem;opacity:.7'>{row['nama']}</span>",
             unsafe_allow_html=True)
+risk_row = data.risk_for(ticker)
+if risk_row is not None:
+    top = max(json.loads(risk_row["reasons"]), key=lambda r: r["points"])["text"]
+    r1, r2 = st.columns([5, 1])
+    r1.info(f"**Label risiko {risk_row['label']} ({int(risk_row['score'])}/100).** {top}", icon=":material/verified_user:")
+    if r2.button("Lihat alasan", key="open_risk", use_container_width=True):
+        ui.open_risk(ticker)
 k = st.columns(5)
 k[0].metric("Pesan", ui.fmt_int(len(msgs)))
 k[1].metric("Kanal", ui.fmt_int(msgs["channel"].nunique()))

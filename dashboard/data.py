@@ -271,3 +271,116 @@ def channel_kinds(channel):
     df = q("""SELECT DISTINCT g.message_id, g.text FROM mentions m
               JOIN messages g ON g.channel = m.channel AND g.message_id = m.message_id WHERE m.channel = ?""", (channel,))
     return df["text"].map(classify).value_counts()
+
+
+# ---------- kepemilikan (ownership.db) ----------
+def ownership_path():
+    return config()["paths"]["ownership_db"]
+
+
+def ownership_exists():
+    return Path(ownership_path()).exists()
+
+
+def oq(sql, params=()):
+    """SELECT read-only ke ownership.db; cache sampai file berubah."""
+    path = ownership_path()
+    return _query(str(path), sql, tuple(params), _mtime(path))
+
+
+def otables():
+    if not ownership_exists():
+        return set()
+    return set(oq("SELECT name FROM sqlite_master WHERE type='table'")["name"])
+
+
+def ohas(*names):
+    return set(names) <= otables()
+
+
+def ownership_dates():
+    return oq("SELECT DISTINCT valid_date FROM holdings ORDER BY valid_date")["valid_date"].tolist() if ohas("holdings") else []
+
+
+def documents():
+    return oq("SELECT * FROM documents ORDER BY valid_date, published_at") if ohas("documents") else pd.DataFrame()
+
+
+def holdings_at(valid_date, ticker=None, known_at=None):
+    """Snapshot bitemporal: posisi per valid_date seperti diketahui pada known_at (None = versi terbaru)."""
+    where, params = ["h.valid_date = ?"], [valid_date]
+    if known_at:
+        where += ["h.tx_from <= ?", "(h.tx_to IS NULL OR h.tx_to > ?)"]
+        params += [known_at, known_at]
+    else:
+        where.append("h.tx_to IS NULL")
+    if ticker:
+        where.append("h.ticker = ?")
+        params.append(ticker)
+    join = ("LEFT JOIN entity_names n ON n.investor_name = h.investor_name "
+            "LEFT JOIN entities e ON e.entity_id = n.entity_id") if ohas("entities") else ""
+    cols = ", n.entity_id, e.canonical_name, e.kind, e.nominee, e.ticker AS entity_ticker" if join else ""
+    return oq(f"SELECT h.*{cols} FROM holdings h {join} WHERE {' AND '.join(where)} ORDER BY h.ticker, h.pct DESC",
+              params)
+
+
+def ff_summary(valid_date=None):
+    if not ohas("ff_summary"):
+        return pd.DataFrame()
+    if valid_date is None:
+        return oq("SELECT * FROM ff_summary ORDER BY valid_date, ticker")
+    return oq("SELECT * FROM ff_summary WHERE valid_date = ? ORDER BY ff_effective", (valid_date,))
+
+
+def ff_groups(valid_date, ticker):
+    return oq("SELECT * FROM ff_groups WHERE valid_date = ? AND ticker = ? ORDER BY agg_pct DESC", (valid_date, ticker))
+
+
+def ff_owners(valid_date, ticker):
+    return oq("SELECT * FROM ff_owners WHERE valid_date = ? AND ticker = ? ORDER BY integrated_pct DESC",
+              (valid_date, ticker))
+
+
+def entities_table():
+    return oq("SELECT * FROM entities") if ohas("entities") else pd.DataFrame()
+
+
+def entity_portfolio(entity_id):
+    return oq("""SELECT h.valid_date, h.ticker, h.issuer_name, h.investor_name, h.total_shares, h.pct
+                 FROM holdings h JOIN entity_names n ON n.investor_name = h.investor_name
+                 WHERE n.entity_id = ? AND h.tx_to IS NULL ORDER BY h.valid_date DESC, h.pct DESC""", (entity_id,))
+
+
+def threshold_events():
+    return oq("SELECT * FROM threshold_events") if ohas("threshold_events") else pd.DataFrame()
+
+
+def threshold_hovering():
+    return oq("SELECT * FROM threshold_hovering") if ohas("threshold_hovering") else pd.DataFrame()
+
+
+def ticker_holding_history(ticker):
+    """pct per entitas per valid_date (versi terbaru) untuk satu ticker."""
+    if not ohas("entities"):
+        return pd.DataFrame()
+    return oq("""SELECT h.valid_date, COALESCE(e.canonical_name, h.investor_name) AS name, SUM(h.pct) AS pct
+                 FROM holdings h LEFT JOIN entity_names n ON n.investor_name = h.investor_name
+                 LEFT JOIN entities e ON e.entity_id = n.entity_id
+                 WHERE h.ticker = ? AND h.tx_to IS NULL GROUP BY h.valid_date, name ORDER BY h.valid_date""", (ticker,))
+
+
+def risk_labels():
+    return oq("SELECT * FROM risk_labels ORDER BY score DESC, ticker") if ohas("risk_labels") else pd.DataFrame()
+
+
+def risk_for(ticker):
+    if not ohas("risk_labels"):
+        return None
+    df = oq("SELECT * FROM risk_labels WHERE ticker = ?", (ticker,))
+    return df.iloc[0] if len(df) else None
+
+
+def transparency_log():
+    from analysis.translog import TransparencyLog
+    p = config()["paths"]
+    return TransparencyLog(p["transparency_log"], p["transparency_heads"])

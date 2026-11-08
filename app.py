@@ -12,6 +12,11 @@ PAGES = {
         st.Page("dashboard/pages/saham.py", title="Jelajah saham", icon=":material/candlestick_chart:"),
         st.Page("dashboard/pages/kanal.py", title="Jaringan & kanal", icon=":material/hub:"),
     ],
+    "Kepemilikan & risiko": [
+        st.Page("dashboard/pages/risiko.py", title="Label risiko", icon=":material/verified_user:"),
+        st.Page("dashboard/pages/freefloat.py", title="Free float efektif", icon=":material/account_tree:"),
+        st.Page("dashboard/pages/ambang.py", title="Ambang 1%", icon=":material/stacked_line_chart:"),
+    ],
     "Operasional": [
         st.Page("dashboard/pages/pipeline.py", title="Jalankan pipeline", icon=":material/play_circle:"),
         st.Page("dashboard/pages/kelola.py", title="Kelola & ekspor", icon=":material/tune:"),

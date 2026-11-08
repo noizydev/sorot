@@ -13,13 +13,40 @@ sys.path.insert(0, str(ROOT))
 from test_pipeline import env  # noqa: E402,F401  (fixture: DB sintetis + hasil analisis)
 
 PAGES = ["dashboard/pages/ringkasan.py", "dashboard/pages/saham.py", "dashboard/pages/kanal.py",
+         "dashboard/pages/risiko.py", "dashboard/pages/freefloat.py", "dashboard/pages/ambang.py",
          "dashboard/pages/pipeline.py", "dashboard/pages/kelola.py"]
+
+
+def build_ownership(cfg):
+    """DB kepemilikan sintetis: 3 snapshot (satu dikoreksi) + hasil free float, ambang, label risiko."""
+    from analysis import freefloat, holdings, risk, threshold
+    from analysis.translog import TransparencyLog
+    from test_ownership import meta, rows
+
+    conn = holdings.connect(cfg["paths"]["ownership_db"])
+    base = [("BUMI", "BUMI RESOURCES Tbk", "PT INDUK", "C", 300, 3.0), ("BUMI", "BUMI RESOURCES Tbk", "PT ANAK MAKMUR TBK", "C", 300, 3.0),
+            ("ANAK", "ANAK MAKMUR Tbk", "PT INDUK", "C", 6000, 60.0)]
+    holdings.add_document(conn, meta("a", "2026-02-27", "2026-03-10T12:09:00"),
+                          rows("2026-02-27", base + [("BUMI", "BUMI RESOURCES Tbk", "PT KECIL", "C", 120, 1.2)]))
+    holdings.add_document(conn, meta("b", "2026-03-31", "2026-04-02T15:20:00"), rows("2026-03-31", base))
+    holdings.add_document(conn, meta("c", "2026-03-31", "2026-04-10T01:28:00"),
+                          rows("2026-03-31", base + [("BUMI", "BUMI RESOURCES Tbk", "BUDI", "I", 110, 1.1)]))
+    freefloat.run(conn, cfg)
+    threshold.run(conn, cfg)
+    df, records = risk.compute(conn, cfg)
+    risk.publish(conn, df, records, TransparencyLog(cfg["paths"]["transparency_log"], cfg["paths"]["transparency_heads"]))
+    conn.close()
 
 
 @pytest.fixture
 def app(env, tmp_path, monkeypatch):
     _, cfg = env
     raw = dict(cfg)
+    for key, name in [("ownership_db", "ownership.db"), ("transparency_log", "log.jsonl"),
+                      ("transparency_heads", "heads.jsonl"), ("shareholder_pdf_dir", "pdf"),
+                      ("shareholder_parsed_dir", "parsed")]:
+        cfg["paths"][key] = tmp_path / name
+    build_ownership(cfg)
     raw["paths"] = {k: str(v) for k, v in cfg["paths"].items()}
     path = tmp_path / "config.yaml"
     path.write_text(yaml.safe_dump(raw, allow_unicode=True), encoding="utf-8")
@@ -81,3 +108,22 @@ def test_job_runner_captures_output():
     with pytest.raises(RuntimeError):
         jobs.start("a", [["-c", "import time; time.sleep(2)"]]) and jobs.start("b", [["-c", "pass"]])
     jobs.stop()
+
+
+def test_risk_page_shows_verified_log_entry(app):
+    app.session_state["risk_open"] = "BUMI"
+    app.run()
+    app.switch_page("dashboard/pages/risiko.py").run()
+    assert errors(app) == []
+    assert any("tercatat di pohon" in s.value for s in app.success)
+
+
+def test_freefloat_page_flags_split_group(app):
+    app.session_state["ff_open"] = "BUMI"
+    app.session_state["ff_view_next"] = "Per emiten"
+    app.run()
+    app.switch_page("dashboard/pages/freefloat.py").run()
+    assert errors(app) == []
+    metrics = {m.label: m.value for m in app.metric}
+    assert metrics["FF proksi"] == "100.00%" and metrics["FF efektif"] == "94.00%"
+    assert any("PT INDUK" in w.value for w in app.warning)
