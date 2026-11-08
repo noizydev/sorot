@@ -19,9 +19,10 @@ PAGES = ["dashboard/pages/ringkasan.py", "dashboard/pages/saham.py", "dashboard/
 
 def build_ownership(cfg):
     """DB kepemilikan sintetis: 3 snapshot (satu dikoreksi) + hasil free float, ambang, label risiko."""
+    from test_ownership import meta, rows
+
     from analysis import freefloat, holdings, risk, threshold
     from analysis.translog import TransparencyLog
-    from test_ownership import meta, rows
 
     conn = holdings.connect(cfg["paths"]["ownership_db"])
     base = [("BUMI", "BUMI RESOURCES Tbk", "PT INDUK", "C", 300, 3.0), ("BUMI", "BUMI RESOURCES Tbk", "PT ANAK MAKMUR TBK", "C", 300, 3.0),

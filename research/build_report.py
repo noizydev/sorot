@@ -4,13 +4,18 @@
 """
 import json
 import sqlite3
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
-OUT = PROJECT / "reports" / "laporan_riset_sorot.html"
-d = json.load(open(PROJECT / "data" / "analysis" / "research.json", encoding="utf-8"))
+sys.path.insert(0, str(PROJECT))
+from analysis.config import load_config  # noqa: E402
+
+PATHS = load_config()["paths"]
+OUT = PATHS["reports_dir"] / "laporan_riset_sorot.html"
+d = json.loads((PATHS["output_dir"] / "research.json").read_text(encoding="utf-8"))
 
 kinds = d["extra"]["mention_kinds_total"]
 total = sum(kinds.values())
@@ -21,12 +26,12 @@ for row in d["extra"]["burst_summary"]:
     n = sum(v for key, v in k.items() if key != "group")
     row["share_promo_dominant"] = k.get("ajakan/rekomendasi", 0) / n
 
-conn = sqlite3.connect(f"{PROJECT}/data/messages.db")
+conn = sqlite3.connect(PATHS["db"])
 corpus = {r[0] for r in conn.execute("SELECT DISTINCT channel FROM messages")}
 d["fwdTotalPremium"] = sum(raw for src, raw in conn.execute(
     "SELECT source, raw_weight FROM graph_edges WHERE kind='forward'") if src not in corpus)
 
-d["periodLabel"] = "1 Apr – 24 Okt 2026"
+d["periodLabel"] = "1 Apr s.d. 24 Okt 2026"
 d["generated"] = "24 Okt 2026"
 
 CASES = {
@@ -69,7 +74,7 @@ for c in d["cases"]:
     c.pop("prices_full", None)
 
 d.pop("channels", None)
-html = open(HERE / "template.html", encoding="utf-8").read()
+html = (HERE / "template.html").read_text(encoding="utf-8")
 data = json.dumps(d, ensure_ascii=False, separators=(",", ":"), default=str).replace("</", "<\\/")
 html = html.replace("/*__DATA__*/null", data)
 OUT.parent.mkdir(parents=True, exist_ok=True)

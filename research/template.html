@@ -306,11 +306,11 @@ $("volCallout").innerHTML = `<b>Cara membaca.</b><p>Burst ≥3 kanal memang diik
 $("tblFwd").innerHTML = `<thead><tr><th>Sumber</th><th>Kanal publik</th><th class="r">Forward</th></tr></thead><tbody>` +
   DATA.top_forward_edges.slice(0, 6).map(r => `<tr><td>${esc(r.source)}</td><td class="mono">@${esc(r.target)}</td><td class="r">${fmt.format(r.raw)}</td></tr>`).join("") + "</tbody>";
 $("tblCopost").innerHTML = `<thead><tr><th>Pasangan kanal</th><th class="r">Kejadian</th><th class="r">Bobot</th></tr></thead><tbody>` +
-  DATA.top_copost_edges.slice(0, 6).map(r => `<tr><td class="mono">@${esc(r.a)} – @${esc(r.b)}</td><td class="r">${fmt.format(r.raw)}</td><td class="r">${fmt2.format(r.norm)}</td></tr>`).join("") + "</tbody>";
+  DATA.top_copost_edges.slice(0, 6).map(r => `<tr><td class="mono">@${esc(r.a)} - @${esc(r.b)}</td><td class="r">${fmt.format(r.raw)}</td><td class="r">${fmt2.format(r.norm)}</td></tr>`).join("") + "</tbody>";
 
 $("tblScore").innerHTML = `<thead><tr><th>Ticker</th><th>Emiten</th><th class="r">Mention</th><th class="r">Kanal</th><th class="r">Burst ≥2 kanal</th><th class="r">Maks. vol H+1</th><th class="r">Cluster</th><th class="r">Skor</th></tr></thead><tbody>` +
   DATA.score_table.map(r => `<tr><td class="mono">${esc(r.ticker)}</td><td>${esc(r.name)}</td><td class="r">${fmt.format(r.mentions)}</td><td class="r">${r.channels}</td>` +
-    `<td class="r">${r.bursts_multi}</td><td class="r">${r.burst_max_ratio ? fmt2.format(r.burst_max_ratio) + "×" : "–"}</td><td class="r">${r.dup_clusters}</td><td class="r">${fmt.format(r.score)}</td></tr>`).join("") + "</tbody>";
+    `<td class="r">${r.bursts_multi}</td><td class="r">${r.burst_max_ratio ? fmt2.format(r.burst_max_ratio) + "×" : "-"}</td><td class="r">${r.dup_clusters}</td><td class="r">${fmt.format(r.score)}</td></tr>`).join("") + "</tbody>";
 
 // ---------- studi kasus ----------
 const PATTERN = { hot: "hot", warn: "warn", acc: "acc", quiet: "quiet" };
@@ -328,7 +328,7 @@ $("cases").innerHTML = DATA.cases.map((c, i) => {
         <dt>Pesan yang menyebut</dt><dd>${fmt.format(c.mentions)}</dd>
         <dt>Kanal berbeda</dt><dd>${c.channels}</dd>
         <dt>Jam burst (≥2 kanal)</dt><dd>${c.bursts.length} (${multi})</dd>
-        <dt>Median volume H+1</dt><dd>${medRatio != null ? fmt2.format(medRatio) + "×" : "–"}</dd>
+        <dt>Median volume H+1</dt><dd>${medRatio != null ? fmt2.format(medRatio) + "×" : "-"}</dd>
         <dt>Kanal teratas</dt><dd>@${esc(c.top_channels[0][0])} (${pct(c.top_channels[0][1] / c.mentions)})</dd>
         <dt>Cluster near-duplicate</dt><dd>${c.dup_clusters.length}</dd>
       </dl>
@@ -371,7 +371,7 @@ function drawCharts() {
       { label: "H0 (hari burst)", data: h0, backgroundColor: css("--warn"), borderRadius: 2 },
       { label: "H+1", data: h1, backgroundColor: css("--accent"), borderRadius: 2 } ] },
     options: { maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } },
-      tooltip: { callbacks: { label: it => `${it.dataset.label}: ${it.raw == null ? "–" : fmt2.format(it.raw) + "×"}` } } },
+      tooltip: { callbacks: { label: it => `${it.dataset.label}: ${it.raw == null ? "-" : fmt2.format(it.raw) + "×"}` } } },
       scales: { y: { grid, beginAtZero: true, ticks: { callback: v => fmt1.format(v) + "×" } }, x: { grid: { display: false } } } }
   }));
 

@@ -24,7 +24,7 @@ c = st.columns(4)
 c[0].metric("Kredensial (.env)", "ada" if env_ok else "belum ada")
 c[1].metric("Session Telegram", "sudah login" if session_ok else "belum login")
 c[2].metric("Pesan tersimpan", ui.fmt_int(s.get("messages")))
-c[3].metric("Pengambilan terakhir", data.to_wib([s["collected"]])[0].strftime("%d %b %H.%M") if s.get("collected") else "–",
+c[3].metric("Pengambilan terakhir", data.to_wib([s["collected"]])[0].strftime("%d %b %H.%M") if s.get("collected") else "-",
             help="Waktu WIB pesan terakhir disimpan")
 
 if not (env_ok and session_ok):
@@ -81,11 +81,11 @@ t1, t2, t3, t4, t5 = st.tabs(["1 · Kumpulkan pesan", "2 · Perbarui harga", "3 
                                "5 · Kepemilikan & risiko"])
 
 with t1:
-    st.markdown("Mengambil pesan baru dari kanal publik di `channels.txt` (incremental, hanya membaca).")
+    st.markdown("Mengambil pesan baru dari kanal publik di `inputs/channels.txt` (incremental, hanya membaca).")
 
     class _A:  # load_channels butuh objek mirip argparse
         channel = None
-        channels = str(ROOT / "channels.txt")
+        channels = str(data.config()["paths"].get("channels_txt", ROOT / "inputs" / "channels.txt"))
 
     try:
         all_channels = load_channels(_A)
@@ -107,7 +107,7 @@ with t1:
         run("kumpulkan", [argv])
 
 with t2:
-    st.markdown("Mengunduh harga harian semua ticker di `idx_tickers.csv` dari Yahoo Finance dan menimpa `prices.csv`.")
+    st.markdown("Mengunduh harga harian semua ticker di `inputs/idx_tickers.csv` dari Yahoo Finance dan menimpa `inputs/prices.csv`.")
     n_tickers = len(data.tickers())
     st.caption(f"{n_tickers} ticker · perkiraan {n_tickers * 1.3 / 60:.0f} menit")
     with st.form("prices_form", border=False):
@@ -144,7 +144,7 @@ with t4:
                  icon=":material/description:"):
         run("laporan_riset", [["research/research_data.py"], ["research/research_kinds.py"],
                               ["research/build_report.py"]])
-    report = ROOT / "reports" / "laporan_riset_sorot.html"
+    report = data.config()["paths"]["reports_dir"] / "laporan_riset_sorot.html"
     if report.exists():
         st.caption(f"Laporan terakhir: {datetime.fromtimestamp(report.stat().st_mtime):%d %b %Y %H.%M}")
         st.download_button("Unduh laporan HTML", report.read_bytes(), report.name, "text/html")
@@ -162,12 +162,12 @@ with t5:
                + (f" · posisi terakhir per {docs['valid_date'].max()}" if len(docs) else ""))
     a, b, c3 = st.columns(3)
     if a.button("Impor + hitung semua", type="primary", disabled=busy or not pdfs, icon=":material/account_tree:",
-                use_container_width=True):
+                width="stretch"):
         run("kepemilikan", [["ownership.py", "all"]])
     if b.button("Hitung ulang label risiko", disabled=busy or not data.ohas("ff_summary"), icon=":material/verified_user:",
-                use_container_width=True, help="Pakai data kepemilikan yang sudah ada + hasil analisis Telegram terbaru"):
+                width="stretch", help="Pakai data kepemilikan yang sudah ada + hasil analisis Telegram terbaru"):
         run("label_risiko", [["ownership.py", "risk"]])
-    if c3.button("Audit transparency log", disabled=busy, icon=":material/fact_check:", use_container_width=True):
+    if c3.button("Audit transparency log", disabled=busy, icon=":material/fact_check:", width="stretch"):
         run("audit_log", [["ownership.py", "verify"]])
     st.caption("Impor pertama membaca setiap PDF (±80 detik per file); berikutnya memakai cache per sha256.")
 

@@ -16,11 +16,13 @@ import time
 import urllib.error
 import urllib.request
 from collections import Counter
-from datetime import date, datetime, time as dtime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from datetime import time as dtime
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
+from analysis.config import load_config  # noqa: E402
 from fetch_prices import CHART_URL, COLUMNS  # noqa: E402
 
 TOKEN_RE = re.compile(r"(?<![A-Za-z0-9])[$#]?([A-Z]{4})(?![A-Za-z0-9])")
@@ -67,13 +69,14 @@ def main():
     p1 = int(datetime.combine(date_from, dtime.min, timezone.utc).timestamp())
     p2 = int(datetime.combine(date_to + timedelta(days=1), dtime.min, timezone.utc).timestamp())
 
-    tickers_csv = PROJECT / "idx_tickers.csv"
+    paths = load_config()["paths"]
+    tickers_csv = paths["tickers_csv"]
     flags = {}
     if tickers_csv.exists():
         with open(tickers_csv, encoding="utf-8-sig", newline="") as f:
             flags = {r["ticker"]: r.get("ambiguous", "") for r in csv.DictReader(f)}
 
-    cands = candidates(PROJECT / "data" / "messages.db", args.min_messages)
+    cands = candidates(paths["db"], args.min_messages)
     print(f"{len(cands)} kandidat token")
     valid, prices, errors = [], [], []
     for i, code in enumerate(cands):
@@ -108,7 +111,7 @@ def main():
         for code, name in sorted(valid):
             w.writerow([code, name, flags.get(code, "")])
     prices.sort(key=lambda r: (r[1], r[0]))
-    with open(PROJECT / "prices.csv", "w", newline="", encoding="utf-8") as f:
+    with open(paths["prices_csv"], "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(COLUMNS)
         w.writerows(prices)

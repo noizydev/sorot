@@ -9,16 +9,16 @@ def fmt_int(v):
     try:
         return f"{int(v):,}".replace(",", ".")
     except (TypeError, ValueError):
-        return "–"
+        return "-"
 
 
 def fmt_ratio(v):
-    return f"{v:.2f}×" if v is not None and pd.notna(v) else "–"
+    return f"{v:.2f}×" if v is not None and pd.notna(v) else "-"
 
 
 def fmt_wib(ts, with_time=True):
     if ts is None or pd.isna(ts):
-        return "–"
+        return "-"
     return ts.strftime("%d %b %Y %H.%M WIB" if with_time else "%d %b %Y")
 
 

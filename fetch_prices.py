@@ -12,7 +12,8 @@ import json
 import sys
 import time
 import urllib.request
-from datetime import date, datetime, time as dtime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from datetime import time as dtime
 from pathlib import Path
 
 from analysis.config import load_config

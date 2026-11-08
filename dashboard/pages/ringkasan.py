@@ -7,7 +7,7 @@ ui.require_db()
 
 s = data.overview()
 first, last = data.to_wib([s["first"], s["last"]])
-st.caption(f"Pesan {ui.fmt_wib(first, False)} – {ui.fmt_wib(last)} · pengambilan terakhir "
+st.caption(f"Pesan {ui.fmt_wib(first, False)} s.d. {ui.fmt_wib(last)} · pengambilan terakhir "
            f"{ui.fmt_wib(data.to_wib([s['collected']])[0])}")
 
 cols = st.columns(5)
@@ -20,14 +20,14 @@ cols[4].metric("Jam burst", ui.fmt_int(s.get("bursts")), help=f"{ui.fmt_int(s.ge
 left, right = st.columns([3, 2])
 with left:
     st.subheader("Volume pesan per minggu")
-    st.plotly_chart(charts.weekly_messages(data.weekly_messages()), use_container_width=True)
+    st.plotly_chart(charts.weekly_messages(data.weekly_messages()), width="stretch")
 with right:
     st.subheader("Ticker paling sering disebut")
     tt = data.ticker_table()
     if tt.empty:
         st.info("Jalankan langkah analisis `mentions` untuk melihat ticker.")
     else:
-        st.plotly_chart(charts.top_tickers(tt), use_container_width=True)
+        st.plotly_chart(charts.top_tickers(tt), width="stretch")
 
 st.subheader("Burst lintas kanal terbaru")
 if not data.has("bursts"):
@@ -41,7 +41,7 @@ else:
         vol_h1=b["volume_ratio_h1"] if "volume_ratio_h1" in b else None,
     )[["waktu", "ticker", "nama", "count", "n_channels", "z", "vol_h1"]]
     event = st.dataframe(
-        view, hide_index=True, use_container_width=True, on_select="rerun", selection_mode="single-row",
+        view, hide_index=True, width="stretch", on_select="rerun", selection_mode="single-row",
         column_config={
             "waktu": "Jam (WIB)", "ticker": "Ticker", "nama": "Emiten", "count": "Pesan",
             "n_channels": "Kanal", "z": st.column_config.NumberColumn("z-score", format="%.1f"),

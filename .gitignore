@@ -14,3 +14,10 @@ reports/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Berkas lokal di luar kode (pengaturan editor/agen, berkas lomba)
+.claude/
+GuideBook*.pdf
+Template*.docx
+PENYISIHAN_*
+FINAL_*

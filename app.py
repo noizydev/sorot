@@ -24,6 +24,9 @@ PAGES = {
 }
 
 with st.sidebar:
-    st.markdown("**SOROT**  \nDeteksi promosi saham terkoordinasi di kanal Telegram publik.")
+    st.markdown("**SOROT**  \nDeteksi promosi saham terkoordinasi di kanal Telegram publik dan risiko kepemilikan "
+                "dari data KSEI.")
+    st.caption("Skor dan label adalah indikator statistik dari data publik untuk riset dan pengawasan, bukan tuduhan "
+               "manipulasi dan bukan rekomendasi jual/beli saham.")
 
 st.navigation(PAGES).run()

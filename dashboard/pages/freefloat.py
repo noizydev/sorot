@@ -37,7 +37,7 @@ if view == "Peringkat":
     s = summary.sort_values("gap" if sort == "Selisih terbesar" else "ff_effective", ascending=sort != "Selisih terbesar")
     ev = st.dataframe(
         s[["ticker", "issuer_name", "ff_proxy", "ff_effective", "gap", "pct_ge1_total", "controller", "controller_stake",
-           "n_split_groups"]], hide_index=True, use_container_width=True, height=520, on_select="rerun",
+           "n_split_groups"]], hide_index=True, width="stretch", height=520, on_select="rerun",
         selection_mode="single-row", key="ff_rank",
         column_config={"ticker": "Ticker", "issuer_name": "Emiten",
                        "ff_proxy": st.column_config.NumberColumn("FF proksi", format="%.2f%%"),
@@ -66,7 +66,7 @@ if view == "Per emiten":
     k[1].metric("FF efektif", f"{row['ff_effective']:.2f}%", delta=f"{-row['gap']:.2f} poin" if row["gap"] else None)
     k[2].metric("Total pemegang ≥1%", f"{row['pct_ge1_total']:.2f}%", help="Sisa di bawah 1% tidak terlihat di data KSEI")
     k[3].metric("Porsi pengendali (terintegrasi)",
-                f"{row['controller_stake']:.2f}%" if pd.notna(row["controller_stake"]) else "–")
+                f"{row['controller_stake']:.2f}%" if pd.notna(row["controller_stake"]) else "-")
     k[4].metric("Pemegang ≥1%", ui.fmt_int(row["n_holders"]))
     no_ctrl = f"tidak ada pemegang dengan porsi terintegrasi ≥ {cfg['control_min'] * 100:g}%"
     st.markdown(f"**Pengendali akhir:** {row['controller'] or no_ctrl}")
@@ -88,13 +88,13 @@ if view == "Per emiten":
                              showlegend=False))
         fig.update_layout(barmode="stack", height=130, margin=dict(l=8, r=8, t=8, b=8), hovermode="closest")
         fig.update_xaxes(range=[0, 100], ticksuffix="%")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
         st.caption("Merah: kelompok ≥5% yang tersembunyi karena dipecah. Oranye: pemegang/kelompok ≥5%. Teal: kelompok "
                    "<5% (dihitung free float). Abu: kepemilikan di bawah 1%.")
         st.markdown("**Kelompok pemegang**")
         gview = groups.assign(anggota=groups["members"].map(lambda m: ", ".join(f"{n} ({p:.2f}%)" for n, p in json.loads(m))))
         st.dataframe(gview[["group_name", "agg_pct", "n_rows", "concentrated", "split", "anggota"]], hide_index=True,
-                     use_container_width=True,
+                     width="stretch",
                      column_config={"group_name": "Kelompok", "agg_pct": st.column_config.NumberColumn("Total", format="%.2f%%"),
                                     "n_rows": "Nama", "concentrated": st.column_config.CheckboxColumn("≥5%"),
                                     "split": st.column_config.CheckboxColumn("Terpecah"),
@@ -102,7 +102,7 @@ if view == "Per emiten":
     with right:
         st.markdown("**Pemilik akhir (kepemilikan terintegrasi)**")
         owners = data.ff_owners(vd, ticker)
-        st.dataframe(owners[["owner", "integrated_pct", "direct_pct"]], hide_index=True, use_container_width=True,
+        st.dataframe(owners[["owner", "integrated_pct", "direct_pct"]], hide_index=True, width="stretch",
                      column_config={"owner": "Pemilik", "integrated_pct": st.column_config.NumberColumn("Terintegrasi", format="%.2f%%"),
                                     "direct_pct": st.column_config.NumberColumn("Langsung", format="%.2f%%")})
         st.caption("Terintegrasi = langsung + lewat semua rantai perusahaan tercatat (W(I−W)⁻¹).")
@@ -117,7 +117,7 @@ if view == "Per emiten":
             fig.add_hline(y=cfg["ff_min_pct"], line_dash="dot", line_color=charts.RED)
             fig.update_layout(height=260, margin=dict(l=8, r=8, t=28, b=8), legend=dict(orientation="h", y=1.1))
             fig.update_yaxes(ticksuffix="%")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
     st.markdown("**Daftar pemegang ≥1% (KSEI)**")
     known = st.toggle("Lihat versi yang diketahui pada tanggal tertentu", key="ff_known_toggle",
@@ -129,7 +129,7 @@ if view == "Per emiten":
         known_at = st.select_slider("Diketahui per (waktu terbit BEI)", versions, value=versions[-1], key=f"ff_known_{vd}")
     h = data.holdings_at(vd, ticker, known_at)
     st.dataframe(h[["investor_name", "canonical_name", "investor_class", "local_foreign", "domicile", "total_shares", "pct",
-                    "tx_from", "tx_to"]], hide_index=True, use_container_width=True,
+                    "tx_from", "tx_to"]], hide_index=True, width="stretch",
                  column_config={"investor_name": "Nama di KSEI", "canonical_name": "Entitas", "investor_class": "Klasifikasi",
                                 "local_foreign": "L/A", "domicile": "Domisili",
                                 "total_shares": st.column_config.NumberColumn("Saham", format="%d"),
@@ -152,14 +152,14 @@ if view == "Entitas":
     if only:
         e = e[(e["n_names"] > 1) | e["ticker"].notna()]
     ev = st.dataframe(e[["canonical_name", "kind", "n_names", "ticker", "nominee", "names"]], hide_index=True,
-                      use_container_width=True, height=420, on_select="rerun", selection_mode="single-row", key="ent_tbl",
+                      width="stretch", height=420, on_select="rerun", selection_mode="single-row", key="ent_tbl",
                       column_config={"canonical_name": "Entitas", "kind": "Jenis", "n_names": "Nama",
                                      "ticker": "Emiten sendiri", "nominee": st.column_config.CheckboxColumn("Nominee"),
                                      "names": st.column_config.TextColumn("Variasi nama", width="large")})
     if ev.selection.rows:
         r = e.iloc[ev.selection.rows[0]]
         st.markdown(f"**Portofolio {r['canonical_name']}** (versi terbaru setiap tanggal)")
-        st.dataframe(data.entity_portfolio(r["entity_id"]), hide_index=True, use_container_width=True,
+        st.dataframe(data.entity_portfolio(r["entity_id"]), hide_index=True, width="stretch",
                      column_config={"pct": st.column_config.NumberColumn("%", format="%.2f"),
                                     "total_shares": st.column_config.NumberColumn("Saham", format="%d")})
-    st.caption("Penggabungan yang keliru bisa diperbaiki lewat entity_aliases.csv (kolom alias,canonical) lalu jalankan ulang.")
+    st.caption("Penggabungan yang keliru bisa diperbaiki lewat inputs/entity_aliases.csv (kolom alias,canonical) lalu jalankan ulang.")

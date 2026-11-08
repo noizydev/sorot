@@ -80,7 +80,7 @@ def parse_args():
                    help=f"Tanggal awal UTC YYYY-MM-DD untuk kanal yang belum pernah diambil (default {DEFAULT_SINCE})")
     p.add_argument("--limit", type=int, default=None,
                    help="Maksimum pesan baru per kanal per eksekusi (default: tanpa batas)")
-    p.add_argument("--channels", default=str(BASE_DIR / "channels.txt"),
+    p.add_argument("--channels", default=str(BASE_DIR / "inputs" / "channels.txt"),
                    help="File daftar username, satu per baris")
     p.add_argument("--channel", action="append",
                    help="Ambil hanya username ini (abaikan --channels); boleh diulang")
@@ -243,9 +243,9 @@ async def resolve_public(client, username, include_groups):
             log.warning("FloodWait %ss saat resolve @%s, tidur dulu", e.seconds, username)
             await asyncio.sleep(e.seconds + FLOOD_PAD_SECONDS)
         except (UsernameNotOccupiedError, UsernameInvalidError, ValueError) as e:
-            raise SkipChannel(f"username tidak ditemukan ({type(e).__name__})")
+            raise SkipChannel(f"username tidak ditemukan ({type(e).__name__})") from e
         except (ChannelPrivateError, ChannelInvalidError) as e:
-            raise SkipChannel(f"kanal privat/tidak bisa diakses ({type(e).__name__})")
+            raise SkipChannel(f"kanal privat/tidak bisa diakses ({type(e).__name__})") from e
 
     if not isinstance(entity, Channel):
         raise SkipChannel(f"bukan kanal ({type(entity).__name__})")

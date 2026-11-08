@@ -15,7 +15,7 @@ ui.require_analysis("mentions")
 
 tt = data.ticker_table()
 if tt.empty:
-    st.info("Belum ada mention ticker. Periksa idx_tickers.csv lalu jalankan analisis.")
+    st.info("Belum ada mention ticker. Periksa inputs/idx_tickers.csv lalu jalankan analisis.")
     st.stop()
 
 labels = {r["ticker"]: ui.ticker_label(r) for r in tt.to_dict("records")}
@@ -50,7 +50,7 @@ if risk_row is not None:
     top = max(json.loads(risk_row["reasons"]), key=lambda r: r["points"])["text"]
     r1, r2 = st.columns([5, 1])
     r1.info(f"**Label risiko {risk_row['label']} ({int(risk_row['score'])}/100).** {top}", icon=":material/verified_user:")
-    if r2.button("Lihat alasan", key="open_risk", use_container_width=True):
+    if r2.button("Lihat alasan", key="open_risk", width="stretch"):
         ui.open_risk(ticker)
 k = st.columns(5)
 k[0].metric("Pesan", ui.fmt_int(len(msgs)))
@@ -63,7 +63,7 @@ k[4].metric("Porsi ajakan", f"{share:.0%}", help="Pesan berisi ajakan/rekomendas
 if px.empty:
     st.caption("Data harga belum ada untuk ticker ini. Jalankan **Perbarui harga** di halaman pipeline.")
 st.plotly_chart(charts.ticker_timeline(msgs, px, bursts, data.config()["prices"]["baseline_days"]),
-                use_container_width=True)
+                width="stretch")
 
 t_msg, t_burst, t_dup, t_pair, t_export = st.tabs(["Pesan", "Burst", "Near-duplicate", "Co-posting", "Ringkasan & unduh"])
 
@@ -83,7 +83,7 @@ with t_msg:
         view = view[view["waktu_wib"].dt.floor("h").isin(hours)]
     st.dataframe(
         view.sort_values("waktu_wib", ascending=False)[["waktu_wib", "channel", "views", "jenis", "prefixed", "text"]],
-        hide_index=True, use_container_width=True, height=460,
+        hide_index=True, width="stretch", height=460,
         column_config={"waktu_wib": st.column_config.DatetimeColumn("Waktu (WIB)", format="YYYY-MM-DD HH:mm"),
                        "channel": "Kanal", "views": st.column_config.NumberColumn("Views", format="%d"),
                        "jenis": "Jenis", "prefixed": st.column_config.CheckboxColumn("$/#"),
@@ -97,7 +97,7 @@ with t_burst:
         bview = bursts.assign(waktu=bursts["jam_wib"].dt.strftime("%Y-%m-%d %H.00"))
         cols = ["waktu", "count", "n_channels", "baseline_mean", "z"] + \
             [c for c in ("h1_date", "volume_ratio_h1") if c in bview]
-        ev = st.dataframe(bview[cols], hide_index=True, use_container_width=True, on_select="rerun",
+        ev = st.dataframe(bview[cols], hide_index=True, width="stretch", on_select="rerun",
                           selection_mode="single-row", key=f"burst_tbl_{ticker}",
                           column_config={"waktu": "Jam (WIB)", "count": "Pesan", "n_channels": "Kanal",
                                          "baseline_mean": st.column_config.NumberColumn("Baseline/jam", format="%.2f"),
@@ -129,7 +129,7 @@ with t_dup:
                              f"{c.span_minutes:,.0f} menit · mulai {first_wib:%d %b %H.%M}"):
                 st.text((c.sample_text or "")[:600])
                 mem = members[members["cluster_id"] == c.cluster_id]
-                st.dataframe(mem[["waktu_wib", "channel", "views"]], hide_index=True, use_container_width=True,
+                st.dataframe(mem[["waktu_wib", "channel", "views"]], hide_index=True, width="stretch",
                              column_config={"waktu_wib": st.column_config.DatetimeColumn("Waktu (WIB)",
                                                                                          format="YYYY-MM-DD HH:mm"),
                                             "channel": "Kanal", "views": "Views"})
@@ -142,7 +142,7 @@ with t_pair:
         st.info(f"Tidak ada dua kanal yang menyebut {ticker} dalam jendela {window} menit.")
     else:
         pdf = pd.DataFrame([(a, b, n) for (a, b), n in pairs.most_common()], columns=["Kanal A", "Kanal B", "Kejadian"])
-        st.dataframe(pdf, hide_index=True, use_container_width=True)
+        st.dataframe(pdf, hide_index=True, width="stretch")
         st.caption(f"Jumlah pasangan pesan dari dua kanal berbeda yang menyebut {ticker} dalam {window} menit.")
 
 with t_export:
@@ -155,7 +155,7 @@ with t_export:
     stem = f"{ticker}_{start}_{end}"
     d1, d2 = st.columns(2)
     d1.download_button("Unduh CSV per pesan", rows.to_csv(index=False).encode("utf-8-sig"),
-                       f"{stem}.csv", "text/csv", use_container_width=True)
+                       f"{stem}.csv", "text/csv", width="stretch")
     d2.download_button("Unduh ringkasan (.txt)", summary.encode("utf-8"), f"{stem}.txt", "text/plain",
-                       use_container_width=True)
+                       width="stretch")
     st.caption("Catatan: report.py membaca tanggal sebagai UTC, sehingga batas hari bisa bergeser 7 jam dari tampilan WIB.")

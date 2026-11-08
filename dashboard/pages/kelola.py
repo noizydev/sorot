@@ -7,7 +7,7 @@ import streamlit as st
 import yaml
 
 from collect import normalize_username
-from dashboard import data, ui
+from dashboard import data
 
 st.title("Kelola & ekspor")
 ROOT = data.ROOT
@@ -23,7 +23,7 @@ def backup(path):
 
 # ---------- kanal ----------
 with t_ch:
-    path = ROOT / "channels.txt"
+    path = cfg["paths"].get("channels_txt", ROOT / "inputs" / "channels.txt")
     st.markdown("Daftar kanal untuk `collect.py`. Kanal nonaktif ditulis sebagai komentar (`# nama`) "
                 "sehingga tidak diambil tetapi tetap tercatat.")
     rows = []
@@ -44,7 +44,7 @@ with t_ch:
     df["terakhir"] = df["username"].str.lower().map(
         data.to_wib(stats["terakhir"]).dt.strftime("%Y-%m-%d")) if len(stats) else None
     edited = st.data_editor(
-        df, num_rows="dynamic", use_container_width=True, hide_index=True, key="ed_channels",
+        df, num_rows="dynamic", width="stretch", hide_index=True, key="ed_channels",
         column_config={"username": st.column_config.TextColumn("Username", required=True,
                                                                help="Tanpa @; t.me/nama juga diterima"),
                        "aktif": st.column_config.CheckboxColumn("Aktif", default=True),
@@ -71,7 +71,7 @@ with t_ch:
             header = "# Kanal publik saham IDX. Satu username per baris; baris diawali # diabaikan.\n"
             path.write_text(header + "\n".join(clean) + "\n", encoding="utf-8")
             st.success(f"Tersimpan {len(clean)} kanal ({sum(not c.startswith('#') for c in clean)} aktif). "
-                       f"Cadangan: channels.txt.bak")
+                       f"Cadangan: {path.name}.bak")
 
 # ---------- ticker ----------
 with t_tk:
@@ -85,7 +85,7 @@ with t_tk:
     shown = tk[tk["ticker"].str.contains(search) | tk["name"].str.upper().str.contains(search)] if search else tk
     st.caption(f"{len(shown)} dari {len(tk)} kode · {int(tk['ambiguous'].sum())} ditandai ambigu")
     edited = st.data_editor(
-        shown, num_rows="dynamic", use_container_width=True, hide_index=True, key=f"ed_tickers_{search}",
+        shown, num_rows="dynamic", width="stretch", hide_index=True, key=f"ed_tickers_{search}",
         column_config={"ticker": st.column_config.TextColumn("Kode", required=True, max_chars=4),
                        "name": st.column_config.TextColumn("Nama emiten"),
                        "ambiguous": st.column_config.CheckboxColumn("Ambigu"),
@@ -220,9 +220,9 @@ with t_exp:
     gexf = cfg["paths"]["output_dir"] / "coposting.gexf"
     if gexf.exists():
         f1.download_button("Graf (GEXF untuk Gephi)", gexf.read_bytes(), gexf.name, "application/xml")
-    report = ROOT / "reports" / "laporan_riset_sorot.html"
+    report = cfg["paths"]["reports_dir"] / "laporan_riset_sorot.html"
     if report.exists():
         f2.download_button("Laporan riset (HTML)", report.read_bytes(), report.name, "text/html")
-    cand = ROOT / "channels_candidates.csv"
+    cand = cfg["paths"].get("channel_candidates_csv", ROOT / "research" / "channels_candidates.csv")
     if cand.exists():
         f3.download_button("Kandidat kanal (CSV)", cand.read_bytes(), cand.name, "text/csv")

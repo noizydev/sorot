@@ -16,7 +16,10 @@ import pandas as pd
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
+from analysis.config import load_config  # noqa: E402
 from analysis.graph import coposting_counts  # noqa: E402
+
+PATHS = load_config()["paths"]
 
 # Studi kasus di laporan dan jam burst yang dikutip pesannya (UTC, awal jam)
 DEFAULT_CASES = "ENRG,CDIA,INET,TPIA,BUMI"
@@ -25,13 +28,13 @@ DEFAULT_HOURS = "ENRG=2026-07-14T03,CDIA=2026-04-14T02,INET=2026-08-18T05,TPIA=2
 ap = argparse.ArgumentParser(description="Bangun data riset dari hasil analyze.py")
 ap.add_argument("--cases", default=DEFAULT_CASES, help="Ticker studi kasus, dipisah koma")
 ap.add_argument("--hours", default=DEFAULT_HOURS, help="TICKER=YYYY-MM-DDTHH jam burst yang dikutip")
-ap.add_argument("--out", default=str(PROJECT / "data" / "analysis" / "research.json"))
+ap.add_argument("--out", default=str(PATHS["output_dir"] / "research.json"))
 args = ap.parse_args()
 OUT = Path(args.out)
 OUT.parent.mkdir(parents=True, exist_ok=True)
 sys.stdout.reconfigure(encoding="utf-8")
 
-conn = sqlite3.connect(f"{PROJECT}/data/messages.db")
+conn = sqlite3.connect(PATHS["db"])
 rd = lambda sql, p=(): pd.read_sql_query(sql, conn, params=p)  # noqa: E731
 utc = lambda s: pd.to_datetime(s, utc=True, format="ISO8601")  # noqa: E731
 
@@ -45,8 +48,8 @@ edges = rd("SELECT * FROM graph_edges")
 bursts = rd("SELECT b.*, v.h1_date, v.volume_ratio_h1, v.avg_volume, v.h1_volume FROM bursts b "
             "LEFT JOIN burst_volume v USING(ticker, hour)")
 bursts["ts"] = utc(bursts["hour"])
-prices = pd.read_csv(f"{PROJECT}/prices.csv", parse_dates=["date"])
-names = pd.read_csv(f"{PROJECT}/idx_tickers.csv").set_index("ticker")["name"].to_dict()
+prices = pd.read_csv(PATHS["prices_csv"], parse_dates=["date"])
+names = pd.read_csv(PATHS["tickers_csv"]).set_index("ticker")["name"].to_dict()
 
 out = {}
 
@@ -212,7 +215,7 @@ def case(ticker):
 
 picked = [t.strip().upper() for t in args.cases.split(",") if t.strip()]
 out["cases"] = [case(t) for t in picked]
-json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
+OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 print("picked:", picked)
 print(json.dumps({k: out[k] for k in ("corpus", "volume_test", "volume_test_ctrl_same_tickers")}, indent=1, ensure_ascii=False))
 print("score top15:")

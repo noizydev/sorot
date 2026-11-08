@@ -7,12 +7,12 @@ from pathlib import Path
 import pytest
 from telethon.tl.types import (
     Message,
+    MessageActionPinMessage,
     MessageFwdHeader,
     MessageMediaPhoto,
     MessageMediaWebPage,
     MessageReplyHeader,
     MessageService,
-    MessageActionPinMessage,
     PeerChannel,
     WebPageEmpty,
 )

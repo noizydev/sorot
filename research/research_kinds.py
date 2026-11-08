@@ -12,11 +12,14 @@ import pandas as pd
 
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT))
+from analysis.config import load_config  # noqa: E402
 from analysis.kinds import classify  # noqa: E402
 
+PATHS = load_config()["paths"]
+
 sys.stdout.reconfigure(encoding="utf-8")
-RJSON = PROJECT / "data" / "analysis" / "research.json"
-conn = sqlite3.connect(f"{PROJECT}/data/messages.db")
+RJSON = PATHS["output_dir"] / "research.json"
+conn = sqlite3.connect(PATHS["db"])
 rd = lambda sql, p=(): pd.read_sql_query(sql, conn, params=p)  # noqa: E731
 utc = lambda s: pd.to_datetime(s, utc=True, format="ISO8601")  # noqa: E731
 
@@ -33,7 +36,7 @@ mentions["kind"] = mentions["text"].map(kind)
 bursts = rd("SELECT b.ticker, b.hour, b.count, b.n_channels, b.z, v.burst_date, v.volume_ratio_h1, v.avg_volume "
             "FROM bursts b LEFT JOIN burst_volume v USING(ticker, hour)")
 bursts["ts"] = utc(bursts["hour"])
-prices = pd.read_csv(f"{PROJECT}/prices.csv", parse_dates=["date"])
+prices = pd.read_csv(PATHS["prices_csv"], parse_dates=["date"])
 px_idx = {(t, d.date()): v for t, d, v in zip(prices["ticker"], prices["date"], prices["volume"])}
 
 rows = []
@@ -81,9 +84,9 @@ comp["total"] = comp.sum(axis=1)
 out["channel_kinds"] = comp.sort_values("total", ascending=False).head(15).reset_index().to_dict(orient="records")
 out["mention_kinds_total"] = mentions["kind"].value_counts().to_dict()
 
-d = json.load(open(RJSON, encoding="utf-8"))
+d = json.loads(RJSON.read_text(encoding="utf-8"))
 d["extra"] = out
-json.dump(d, open(RJSON, "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
+RJSON.write_text(json.dumps(d, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 print(json.dumps(out["burst_summary"], indent=1, ensure_ascii=False))
 print(pd.DataFrame(out["burst_kinds"]).to_string())
 print("mention kinds:", out["mention_kinds_total"])

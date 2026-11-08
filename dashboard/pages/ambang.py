@@ -41,7 +41,7 @@ if view == "Kejadian":
         v = v[v["ticker"].str.contains(q, regex=False) | v["name"].str.upper().str.contains(q, regex=False)]
     v = v.sort_values(["score", "pct0"], ascending=[False, True])
     sel = st.dataframe(v[["ticker", "name", "kind", "t0", "t1", "pct0", "score", "patterns", "reason"]], hide_index=True,
-                       use_container_width=True, height=480, on_select="rerun", selection_mode="single-row", key="amb_tbl",
+                       width="stretch", height=480, on_select="rerun", selection_mode="single-row", key="amb_tbl",
                        column_config={"ticker": "Ticker", "name": "Pemegang", "kind": "Jenis", "t0": "Terakhir tercatat",
                                       "t1": "Hilang per", "pct0": st.column_config.NumberColumn("Porsi terakhir", format="%.2f%%"),
                                       "score": st.column_config.NumberColumn("Skor", format="%d"), "patterns": "Pola",
@@ -53,8 +53,8 @@ if view == "Kejadian":
         st.rerun()
     hov = data.threshold_hovering()
     if len(hov):
-        with st.expander(f"{len(hov)} pemegang berulang kali 'parkir' tepat di atas 1% (1,00–1,10%)"):
-            st.dataframe(hov, hide_index=True, use_container_width=True,
+        with st.expander(f"{len(hov)} pemegang berulang kali 'parkir' tepat di atas 1% (1,00-1,10%)"):
+            st.dataframe(hov, hide_index=True, width="stretch",
                          column_config={"n_dates": "Jumlah tanggal", "pcts": "Porsi per tanggal"})
 
 if view == "Riwayat emiten":
@@ -71,24 +71,24 @@ if view == "Riwayat emiten":
                   annotation_text=f"ambang {thr['threshold_pct']:g}%")
     fig.update_yaxes(type="log", title="porsi (%) skala log", ticksuffix="%")
     fig.update_layout(height=460, margin=dict(l=8, r=8, t=28, b=8), legend=dict(orientation="h", y=-0.15))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     st.caption("Garis yang berhenti sebelum tanggal terakhir berarti pemegang itu tidak lagi tercatat (di bawah 1% atau menjual).")
     te = ev[ev["ticker"] == ticker] if len(ev) else ev
     if len(te):
         st.dataframe(te[["name", "t0", "t1", "pct0", "status", "patterns", "reason"]], hide_index=True,
-                     use_container_width=True,
+                     width="stretch",
                      column_config={"pct0": st.column_config.NumberColumn("Porsi terakhir", format="%.2f%%"),
                                     "reason": st.column_config.TextColumn("Penjelasan", width="large")})
     pivot = hist.pivot_table(index="name", columns="valid_date", values="pct", aggfunc="sum")
-    st.dataframe(pivot.sort_values(pivot.columns[-1], ascending=False, na_position="last").style.format("{:.2f}", na_rep="–"),
-                 use_container_width=True)
+    st.dataframe(pivot.sort_values(pivot.columns[-1], ascending=False, na_position="last").style.format("{:.2f}", na_rep="-"),
+                 width="stretch")
 
 if view == "Koreksi data (bitemporal)":
     docs = data.documents()
     st.markdown("**Dokumen sumber**: setiap baris adalah satu versi yang diterbitkan BEI. Data per tanggal yang sama bisa "
                 "dikoreksi beberapa kali; versi lama tetap tersimpan dan hanya diberi waktu berakhir.")
     st.dataframe(docs[["valid_date", "published_at", "announcement_no", "corrects", "rows", "file", "note"]],
-                 hide_index=True, use_container_width=True,
+                 hide_index=True, width="stretch",
                  column_config={"valid_date": "Posisi per", "published_at": "Terbit", "announcement_no": "Nomor pengumuman",
                                 "corrects": "Mengoreksi", "rows": "Baris", "file": "File", "note": "Catatan"})
     multi = docs["valid_date"].value_counts()
@@ -103,7 +103,7 @@ if view == "Koreksi data (bitemporal)":
         finally:
             conn.close()
         st.caption(f"{len(diff)} baris berubah antar versi.")
-        st.dataframe(diff, hide_index=True, use_container_width=True, height=420,
+        st.dataframe(diff, hide_index=True, width="stretch", height=420,
                      column_config={"total_shares_lama": st.column_config.NumberColumn("Saham (lama)", format="%d"),
                                     "total_shares_baru": st.column_config.NumberColumn("Saham (baru)", format="%d"),
                                     "pct_lama": st.column_config.NumberColumn("% lama", format="%.2f"),

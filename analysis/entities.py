@@ -211,7 +211,7 @@ def despaced_unions(df, uf, key, threshold=93, min_len=15):
     """Nama korporat yang terpotong atau spasinya bergeser ('PTA SHMORE ASSET MANAGEMENT INDO' vs
     'ASHMORE ASSET MANAGEMENT INDONESIA'): bandingkan tanpa spasi, setelah membuang 'PT' di depan."""
     raw_of = defaultdict(list)
-    for raw, k, n in zip(df["investor_name"], df["kind"], df["norm"]):
+    for raw, n in zip(df["investor_name"], df["norm"]):
         raw_of[n].append(raw)
     corp = {n for k, n in zip(df["kind"], df["norm"]) if k == "korporat"
             and not is_fund(n) and not any(is_nominee(r) for r in raw_of[n])}
@@ -261,7 +261,8 @@ def continuity_unions(holdings, by_raw, uf, key, min_ratio=85):
             if distinct_series(na, nb) or not normalize(a) or not normalize(b):
                 continue  # nama generik ("PERUSAHAAN PERSEROAN (PERSERO) PT.") bukan bukti identitas
             ra, rb = " ".join(a.upper().split()), " ".join(b.upper().split())
-            prefix = any(len(s) >= 8 and l.startswith(s) for s, l in (sorted((na, nb), key=len), sorted((ra, rb), key=len)))
+            prefix = any(len(short) >= 8 and long_.startswith(short)
+                         for short, long_ in (sorted((na, nb), key=len), sorted((ra, rb), key=len)))
             if prefix or fuzz.ratio(na, nb) >= min_ratio:
                 uf.union(key(*by_raw[a]), key(*by_raw[b]))
                 merged += 1

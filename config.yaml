@@ -1,22 +1,26 @@
 # Parameter analisis SOROT. Path relatif dihitung dari folder file ini.
 
 paths:
-  db: data/messages.db           # input (tabel messages) sekaligus tempat tabel hasil analisis
-  raw_dir: data/raw              # dipakai untuk memetakan channel_id -> username (edge forward)
-  tickers_csv: idx_tickers.csv   # wajib: kolom `ticker`; opsional kolom `ambiguous` (1/0)
-  prices_csv: prices.csv         # opsional: kolom `date`, `ticker`, `volume` (data EOD)
-  output_dir: data/analysis      # file graf (GEXF)
-  reports_dir: reports           # keluaran report.py
+  # input yang ikut repo
+  channels_txt: inputs/channels.txt                 # daftar kanal untuk collect.py, satu username per baris
+  tickers_csv: inputs/idx_tickers.csv               # wajib: kolom `ticker`; opsional kolom `ambiguous` (1/0)
+  prices_csv: inputs/prices.csv                     # opsional: kolom `date`, `ticker`, `volume` (data EOD)
+  entity_aliases_csv: inputs/entity_aliases.csv     # opsional: penggabungan nama manual (alias,canonical)
+  channel_candidates_csv: research/channels_candidates.csv  # hasil pencarian kandidat kanal
+  transparency_heads: transparency/heads.jsonl      # tree head Merkle (ikut git sebagai jangkar publik)
+  # data hasil pengumpulan dan analisis (tidak ikut repo)
+  db: data/messages.db                              # tabel messages sekaligus tabel hasil analisis
+  raw_dir: data/raw                                 # raw JSONL per kanal (pemetaan channel_id -> username)
+  output_dir: data/analysis                         # graf GEXF dan research.json
+  reports_dir: reports                              # keluaran report.py dan laporan riset
   ownership_db: data/ownership.db                   # kepemilikan bitemporal, entitas, free float, ambang, label
   shareholder_pdf_dir: data/shareholders/pdf        # PDF "Pemegang Saham di atas 1% (KSEI)" dari BEI
   shareholder_parsed_dir: data/shareholders/parsed  # cache hasil parse per sha256
-  entity_aliases_csv: entity_aliases.csv            # opsional: penggabungan nama manual (alias,canonical)
   transparency_log: data/transparency/log.jsonl     # entri label risiko (append-only)
-  transparency_heads: transparency/heads.jsonl      # tree head Merkle (ikut git sebagai jangkar publik)
 
 tickers:
   # Kode yang juga kata umum hanya dihitung bila berawalan $/# atau ada kata konteks di dekatnya.
-  # Daftar ini boleh berisi kata apa saja; yang dipakai hanya irisannya dengan idx_tickers.csv.
+  # Daftar ini boleh berisi kata apa saja; yang dipakai hanya irisannya dengan inputs/idx_tickers.csv.
   common_words: [
     BELI, JUAL, BUMI, CUAN, EMAS, BUKA, BANK, BAIK, BEST, GOOD, MAIN, DATA, LAND, HOME,
     LIFE, FOOD, FAST, SAFE, "TRUE", HOPE, KING, CITY, BALI, ROTI, KOPI, NASI, ENAK, AMAN,

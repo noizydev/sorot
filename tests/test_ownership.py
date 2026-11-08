@@ -13,7 +13,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from analysis import entities as ent  # noqa: E402
 from analysis import freefloat, holdings, ksei, risk, threshold  # noqa: E402
 from analysis.config import load_config  # noqa: E402
-from analysis.translog import TransparencyLog, canonical, leaf_hash, root, verify_inclusion  # noqa: E402
+from analysis.translog import (  # noqa: E402
+    TransparencyLog,
+    canonical,
+    leaf_hash,
+    root,
+    verify_inclusion,
+)
 
 CLASS = {"I": "Individual", "C": "Corporate", "B": "Bank"}
 

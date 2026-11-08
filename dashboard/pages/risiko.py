@@ -8,9 +8,10 @@ from analysis.translog import canonical, leaf_hash, verify_inclusion
 from dashboard import charts, data, ui
 
 st.title("Label risiko")
-st.caption("Skor 0–100 dari empat komponen: free float efektif, penghindaran ambang 1%, dan promosi terkoordinasi di "
-           "Telegram. Setiap poin punya alasan tertulis. Setiap label dicatat di transparency log berbasis Merkle tree, "
-           "sehingga perubahan diam-diam akan terdeteksi saat audit.")
+st.caption("Skor 0-100 dari tiga kelompok sinyal: free float efektif, penghindaran ambang 1%, dan promosi terkoordinasi "
+           "di Telegram. Setiap poin punya alasan tertulis. Setiap label dicatat di transparency log berbasis Merkle tree, "
+           "sehingga perubahan diam-diam akan terdeteksi saat audit. Label Tinggi berarti layak diperiksa lebih lanjut, "
+           "bukan bukti pelanggaran.")
 
 labels = data.risk_labels()
 if labels.empty:
@@ -38,7 +39,7 @@ if view == "Peringkat":
     v = labels[labels["label"].isin(lab_sel)] if lab_sel else labels
     v = v.assign(alasan_utama=v["reasons"].map(lambda r: max(json.loads(r), key=lambda x: x["points"])["text"]))
     sel = st.dataframe(v[["ticker", "issuer_name", "score", "label", "ff_effective", "alasan_utama"]], hide_index=True,
-                       use_container_width=True, height=520, on_select="rerun", selection_mode="single-row", key="risk_tbl",
+                       width="stretch", height=520, on_select="rerun", selection_mode="single-row", key="risk_tbl",
                        column_config={"ticker": "Ticker", "issuer_name": "Emiten",
                                       "score": st.column_config.ProgressColumn("Skor", min_value=0, max_value=100, format="%d"),
                                       "label": "Label", "ff_effective": st.column_config.NumberColumn("FF efektif", format="%.2f%%"),
@@ -61,9 +62,9 @@ if view == "Per emiten":
         if pd.notna(row["ff_effective"]):
             st.metric("Free float efektif", f"{row['ff_effective']:.2f}%", help=f"Proksi: {row['ff_proxy']:.2f}%")
         b1, b2 = st.columns(2)
-        if b1.button("Kepemilikan", icon=":material/account_tree:", use_container_width=True):
+        if b1.button("Kepemilikan", icon=":material/account_tree:", width="stretch"):
             ui.open_freefloat(ticker)
-        if b2.button("Telegram", icon=":material/forum:", use_container_width=True):
+        if b2.button("Telegram", icon=":material/forum:", width="stretch"):
             ui.open_ticker(ticker)
     with c2:
         st.markdown("**Mengapa skor ini**")
@@ -74,7 +75,7 @@ if view == "Per emiten":
         fig = go.Figure(go.Bar(x=[r["points"] for r in reasons], y=[r["code"] for r in reasons], orientation="h",
                                marker_color=COLOR[row["label"]]))
         fig.update_layout(height=60 + 28 * len(reasons), margin=dict(l=8, r=8, t=8, b=8))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.markdown("**Bukti di transparency log**")
     entries = tlog.entries()
@@ -91,7 +92,7 @@ if view == "Per emiten":
         same = entry["entry"]["score"] == int(row["score"]) and entry["entry"]["label"] == row["label"]
         (st.success if ok and same else st.error)(
             f"Entri #{idx} {'tercatat' if ok else 'TIDAK cocok'} di pohon berukuran {head['size']} dengan root "
-            f"`{head['root'][:16]}…`" + ("" if same else " — skor di database berbeda dari log!"))
+            f"`{head['root'][:16]}…`" + ("" if same else ". Peringatan: skor di database berbeda dari log!"))
         with st.expander("Rincian kriptografis (bisa diverifikasi ulang secara independen)"):
             st.markdown(f"- Leaf hash: `{lh.hex()}`\n- Indeks: {idx}, ukuran pohon: {head['size']}\n"
                         f"- Root: `{head['root']}` ({head['timestamp']})")
@@ -112,8 +113,8 @@ if view == "Audit log":
     if heads:
         hv = pd.DataFrame(heads)
         hv["consistency"] = hv.get("consistency", pd.Series([None] * len(hv))).map(
-            lambda c: f"{len(c)} hash" if isinstance(c, list) else "–")
-        st.dataframe(hv[["timestamp", "size", "prev_size", "root", "consistency"]], hide_index=True, use_container_width=True,
+            lambda c: f"{len(c)} hash" if isinstance(c, list) else "-")
+        st.dataframe(hv[["timestamp", "size", "prev_size", "root", "consistency"]], hide_index=True, width="stretch",
                      column_config={"timestamp": "Waktu", "size": "Ukuran", "prev_size": "Ukuran sebelumnya",
                                     "root": st.column_config.TextColumn("Root", width="large"), "consistency": "Bukti konsistensi"})
     st.code("python ownership.py verify", language="bash")

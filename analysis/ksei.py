@@ -205,7 +205,7 @@ def split_overlapping_names(rows):
     for i, r in enumerate(rows):
         if r[2] and not r[3]:
             by_ticker.setdefault(r[1], []).append(i)
-    for ticker, idx in by_ticker.items():
+    for idx in by_ticker.values():
         if len(idx) < 2:
             continue
         prefix = os.path.commonprefix([rows[i][2] for i in idx])

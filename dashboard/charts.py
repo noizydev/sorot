@@ -55,8 +55,8 @@ def ticker_timeline(msgs, px, bursts, baseline_days=20):
     if len(bursts):
         day = bursts["jam_wib"].dt.normalize()
         y = day.map(daily).fillna(0)
-        ratio = bursts["volume_ratio_h1"].map(lambda v: f"{v:.2f}×" if pd.notna(v) else "–") \
-            if "volume_ratio_h1" in bursts else "–"
+        ratio = bursts["volume_ratio_h1"].map(lambda v: f"{v:.2f}×" if pd.notna(v) else "-") \
+            if "volume_ratio_h1" in bursts else "-"
         fig.add_trace(go.Scatter(
             x=day, y=y, mode="markers", name="Burst", marker=dict(symbol="triangle-up", size=12,
                                                                   color=[burst_color(n) for n in bursts["n_channels"]]),

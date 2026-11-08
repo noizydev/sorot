@@ -35,7 +35,7 @@ def detect(snapshots, threshold_pct=1.0, near_band_pp=0.5, dilution_tolerance=0.
         for ticker, g0 in e0.groupby(level="ticker"):
             if ticker not in tickers1:
                 continue  # emiten tidak ada di snapshot berikutnya (delisting/suspensi), bukan kejadian per pemegang
-            ids1 = set(e1.loc[ticker].index) if ticker in tickers1 else set()
+            ids1 = set(e1.loc[ticker].index)
             ids0 = set(g0.index.get_level_values("entity_id"))
             exits = [eid for eid in ids0 if eid not in ids1]
             entrants = e1.loc[ticker].loc[[eid for eid in ids1 if eid not in ids0]] if ids1 - ids0 else e1.iloc[0:0]
